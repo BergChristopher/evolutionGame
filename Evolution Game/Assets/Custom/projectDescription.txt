@@ -1,0 +1,42 @@
+This document describes the game "Evolution", which is a protoype game for the Game Development course at the university of Hamburg.
+
+The game in three sentences:
+It's a 2D fish simulation game with (b)eat 'em up elements in form of being able to eat fish and plants and 
+role playing elements in form of being able to control a fish and 
+evolve into a more evolved fish. The game plays in a realistic under water environment and 
+is in the style of reality with some exaggerated elements.
+The goal of the game is to evolve into the most evolved being in the game.
+ 
+The game in more detail:
+game enginde: Unity3D
+dimensions: 2D
+Phase 1 decisions:
+	genretypes:
+ 		fishsimulation (control a fish), 
+ 		role-playing (be the fish, evolve, upgrade)
+ 		(b)eat 'em up (eat plants or fish)
+Phase 2 decisions:
+	plot and style:
+		realistic action driven events in a realistic style with some exaggerated elements
+Phase 3 decisions:
+	environment:
+		the location is an underwater finite space
+	basic conditions:
+		the physical conditions are (near) realistic
+		the graphical style is realistic  
+		the acoustical style is realistic 
+		in the biosphere of the game are plants, fish and humans
+		the possibilities of interaction are the movement of the fish, eating and some specials (shooting toxic for example)
+Phase 4 decisions:
+	protagonist:
+		the protagonist is a fish
+	antagonist:
+		there are many antagonists which are fish, plants, traps and humans
+Phase 5 decisions:
+	protagonist:
+		the protagonist wants to evolve and eventually walk the beach
+	antagonist:
+		the fish are hungry
+		the humans are hungry, have fun at hunting and want to collect trophies and be recognised 
+	
+	
