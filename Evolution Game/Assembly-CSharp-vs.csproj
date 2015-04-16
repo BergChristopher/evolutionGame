@@ -48,6 +48,7 @@
   <ItemGroup>
      <Compile Include="Assets\Custom\Scripts\CameraFollowsObject.cs" />
      <Compile Include="Assets\Custom\Scripts\FishController.cs" />
+     <Compile Include="Assets\Custom\Scripts\LevelCollider.cs" />
      <None Include="Assets\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\BlendOneOne.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\NoiseEffectShaderRGB.shader" />
