@@ -39,6 +39,12 @@ Phase 5 decisions:
 		the fish are hungry
 		the humans are hungry, have fun at hunting and want to collect trophies and be recognised 
 
+Reward system:
+	1. Points: There will be a highscore system. The player gains points for certain events, like eating other fish or evolving.
+	2. Useable Assets: The player can change the size and shape of the fish by evolving. 
+	3. Abilitiy updates: The player can add new abilities to the fish through evolution.
+	4. Achievements: There will be certain challenges in the game (like eat 100 fish). When completed, they will reward the player with a new emblem. 
+
 Ideas:
 	cast into a fish:
 		The story could be that you were once human and have been cast into a fish by the pope since you were a scientist and the curch didn't approve your theories of the evolution

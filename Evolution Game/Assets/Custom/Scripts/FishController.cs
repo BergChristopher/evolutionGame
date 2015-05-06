@@ -9,6 +9,7 @@ public class FishController : MonoBehaviour {
 
 	private Vector2 calculatedVelocity = Vector2.zero;
 	private Vector2 previousSpeed = Vector2.zero;
+	private bool isFacingRight = true;
 
 	// Use this for initialization
 	void Start () {
@@ -18,6 +19,10 @@ public class FishController : MonoBehaviour {
 	void Update () {
 		calculatedVelocity.x = previousSpeed.x + (Input.GetAxis ("Horizontal") * swimAcceleration.x * Time.deltaTime); //v=v0+a*(t-t0)
 		calculatedVelocity.y = previousSpeed.y + (Input.GetAxis ("Vertical") * swimAcceleration.y * Time.deltaTime); //v=v0+a*(t-t0)
+
+		if ((Input.GetAxis ("Horizontal") < 0 && isFacingRight) || (Input.GetAxis ("Horizontal") > 0 && !isFacingRight)) {
+			switchFacingDirection();
+		}
 
 		float horizontalDrag = (dragCoefficient.x * (calculatedVelocity.x * calculatedVelocity.x)) 
 			+ Mathf.Abs (Time.deltaTime * dragCoefficient.x);
@@ -46,10 +51,17 @@ public class FishController : MonoBehaviour {
 		previousSpeed.x = calculatedVelocity.x; 
 		previousSpeed.y = calculatedVelocity.y;
 
-		Debug.Log ("Velocity.x = " + calculatedVelocity.x + "Velocity.y = " + calculatedVelocity.y);
-
 		this.transform.position = new Vector3(this.transform.position.x + calculatedVelocity.x, 
 		                                      this.transform.position.y + calculatedVelocity.y, 
 		                                      this.transform.position.z);
+	}
+
+	private void switchFacingDirection() {
+		isFacingRight = !isFacingRight;
+		if (isFacingRight) {
+			this.transform.rotation = new Quaternion(this.transform.rotation.x, 180, this.transform.rotation.z, this.transform.rotation.w);
+		} else {
+			this.transform.rotation = new Quaternion(this.transform.rotation.x, 0, this.transform.rotation.z, this.transform.rotation.w);
+		}
 	}
 }
