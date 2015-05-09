@@ -3,65 +3,99 @@ using System.Collections;
 
 public class FishController : MonoBehaviour {
 
-	public Vector2 swimAcceleration = new Vector2 (1f,1f);
-	public Vector2 dragCoefficient = new Vector2 (0.1f, 0.1f);
-	public Vector2 maximumVelocity = new Vector2 (0.5f,0.5f);
+	private const int ESTIMATED_FRAMES_PER_SECOND = 60;
 
-	private Vector2 calculatedVelocity = Vector2.zero;
-	private Vector2 previousSpeed = Vector2.zero;
+	public Vector2 swimAcceleration = new Vector2 (4f,2f);
+	public Vector2 dragCoefficient = new Vector2 (0.01f, 0.015f);
+	public Vector2 maximumVelocity = new Vector2 (20f,10f); // units per second
+
+	private Animator animator;
+
+	private Vector2 velocity = Vector2.zero;
 	private bool isFacingRight = true;
+	private bool isReadyToEat = false;
 
 	// Use this for initialization
 	void Start () {
+		animator = this.GetComponent<Animator>();
+		if (animator == null) {
+			Debug.LogWarning("No animator attached to FishController on " + this.name);
+		}
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		calculatedVelocity.x = previousSpeed.x + (Input.GetAxis ("Horizontal") * swimAcceleration.x * Time.deltaTime); //v=v0+a*(t-t0)
-		calculatedVelocity.y = previousSpeed.y + (Input.GetAxis ("Vertical") * swimAcceleration.y * Time.deltaTime); //v=v0+a*(t-t0)
 
+
+		updateMovement ();
+		updateFacingDirection ();
+		updateAnimation ();
+
+
+	}
+
+	public bool getIsReadyToEat() {
+		return isReadyToEat;
+	}
+
+	private void updateFacingDirection() {
 		if ((Input.GetAxis ("Horizontal") < 0 && isFacingRight) || (Input.GetAxis ("Horizontal") > 0 && !isFacingRight)) {
-			switchFacingDirection();
+			isFacingRight = !isFacingRight;
+			if (isFacingRight) {
+				this.transform.rotation = new Quaternion (this.transform.rotation.x, 180, this.transform.rotation.z, this.transform.rotation.w);
+			} else {
+				this.transform.rotation = new Quaternion (this.transform.rotation.x, 0, this.transform.rotation.z, this.transform.rotation.w);
+			}
 		}
+	}
 
-		float horizontalDrag = (dragCoefficient.x * (calculatedVelocity.x * calculatedVelocity.x)) 
-			+ Mathf.Abs (Time.deltaTime * dragCoefficient.x);
-		float verticalDrag = (dragCoefficient.y * (calculatedVelocity.y * calculatedVelocity.y)) 
-			+ Mathf.Abs (Time.deltaTime * dragCoefficient.y);
+	private void updateMovement() {
+		Vector2 previousVelocity = Vector2.zero;
+		previousVelocity.x = velocity.x; 
+		previousVelocity.y = velocity.y;
 
-		if (calculatedVelocity.x > horizontalDrag) {
-			calculatedVelocity.x -= horizontalDrag; //physical drag applied
-		} else if (calculatedVelocity.x < -horizontalDrag) {
-			calculatedVelocity.x += horizontalDrag; //physical drag applied
+		velocity.x = previousVelocity.x + (Input.GetAxis ("Horizontal") * swimAcceleration.x * Time.deltaTime * ESTIMATED_FRAMES_PER_SECOND); //v=v0+a*(t-t0)
+		velocity.y = previousVelocity.y + (Input.GetAxis ("Vertical") * swimAcceleration.y * Time.deltaTime * ESTIMATED_FRAMES_PER_SECOND); //v=v0+a*(t-t0)
+		
+		float horizontalDrag = (dragCoefficient.x * (velocity.x * velocity.x)) + (dragCoefficient.x);
+		float verticalDrag = (dragCoefficient.y * (velocity.y * velocity.y)) + (dragCoefficient.y);
+
+		Debug.Log ("horDrag = " + horizontalDrag + " horVel = " + velocity.x + " Time.delta " + Time.deltaTime);
+
+		if (velocity.x > horizontalDrag) {
+			velocity.x -= horizontalDrag; //physical drag applied
+		} else if (velocity.x < -horizontalDrag) {
+			velocity.x += horizontalDrag; //physical drag applied
 		} else {
-			calculatedVelocity.x = 0; //prevent too small velocities
+			velocity.x = 0; //prevent too small velocities
 		}
 
-		if (calculatedVelocity.y > verticalDrag) {
-			calculatedVelocity.y -= verticalDrag; //physical drag applied
-		} else if (calculatedVelocity.y < -verticalDrag) {
-			calculatedVelocity.y += verticalDrag; //physical drag applied
+		Debug.Log ("results in " + ((velocity.x - horizontalDrag) * Time.deltaTime * 60));
+
+		if (velocity.y > verticalDrag) {
+			velocity.y -= verticalDrag; //physical drag applied
+		} else if (velocity.y < -verticalDrag) {
+			velocity.y += verticalDrag; //physical drag applied
 		} else {
-			calculatedVelocity.y = 0; //prevent too small velocities
+			velocity.y = 0; //prevent too small velocities
 		}
-
-		calculatedVelocity.x = Mathf.Clamp (calculatedVelocity.x, (maximumVelocity.x * -1), maximumVelocity.x); //clamp between max and min velocity
-		calculatedVelocity.y = Mathf.Clamp (calculatedVelocity.y, (maximumVelocity.y * -1), maximumVelocity.y); //clamp between max and min velocity
-
-		previousSpeed.x = calculatedVelocity.x; 
-		previousSpeed.y = calculatedVelocity.y;
-
-		this.transform.position = new Vector3(this.transform.position.x + calculatedVelocity.x, 
-		                                      this.transform.position.y + calculatedVelocity.y, 
+		
+		velocity.x = Mathf.Clamp (velocity.x, (maximumVelocity.x * -1), maximumVelocity.x); //clamp between max and min velocity
+		velocity.y = Mathf.Clamp (velocity.y, (maximumVelocity.y * -1), maximumVelocity.y); //clamp between max and min velocity
+		
+		this.transform.position = new Vector3(this.transform.position.x + (velocity.x * Time.deltaTime), 
+		                                      this.transform.position.y + (velocity.y * Time.deltaTime), 
 		                                      this.transform.position.z);
 	}
 
-	private void switchFacingDirection() {
-		isFacingRight = !isFacingRight;
-		if (isFacingRight) {
-			this.transform.rotation = new Quaternion(this.transform.rotation.x, 180, this.transform.rotation.z, this.transform.rotation.w);
-		} else {
-			this.transform.rotation = new Quaternion(this.transform.rotation.x, 0, this.transform.rotation.z, this.transform.rotation.w);
+	private void updateAnimation() {
+		if (Input.GetKeyDown (KeyCode.Space)) {
+			animator.SetInteger("Action",1); //Action 1 indicates a transition to the eat animation
+			isReadyToEat = true;
+		}
+		if (Input.GetKeyUp (KeyCode.Space)) {
+			animator.SetInteger("Action",0); //Action 0 indicates a transition to the normal animation
+			isReadyToEat = false;
 		}
 	}
 }

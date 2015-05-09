@@ -14,10 +14,11 @@ public class Plant : MonoBehaviour {
 	}
 
 	void OnTriggerEnter2D (Collider2D enteringCollider) {
-		Debug.Log ("trigger enter");
 		if (enteringCollider.gameObject.tag == "Player") {
-			Debug.Log ("is player");
-			Destroy(this.gameObject);
+			FishController fish = enteringCollider.GetComponent<FishController>();
+			if(fish != null && fish.getIsReadyToEat()) {
+				Destroy(this.gameObject);
+			}
 		}
 	}
 
