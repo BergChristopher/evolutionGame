@@ -9,11 +9,14 @@ public class FishController : MonoBehaviour {
 	public Vector2 dragCoefficient = new Vector2 (0.01f, 0.015f);
 	public Vector2 maximumVelocity = new Vector2 (20f,10f); // units per second
 
+	public float maximumYPosition = 12.7f;
+
 	private Animator animator;
 
 	private Vector2 velocity = Vector2.zero;
 	private bool isFacingRight = true;
 	private bool isReadyToEat = false;
+	private bool isAlive = true;
 
 	// Use this for initialization
 	void Start () {
@@ -25,17 +28,20 @@ public class FishController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
-
-		updateMovement ();
-		updateFacingDirection ();
-		updateAnimation ();
-
-
+		if (isAlive) {
+			updateMovement ();
+			updateFacingDirection ();
+			updateAnimation ();
+		}
 	}
 
 	public bool getIsReadyToEat() {
 		return isReadyToEat;
+	}
+
+	public void die() {
+		isAlive = false;
+		Destroy (this.gameObject);
 	}
 
 	private void updateFacingDirection() {
@@ -60,8 +66,6 @@ public class FishController : MonoBehaviour {
 		float horizontalDrag = (dragCoefficient.x * (velocity.x * velocity.x)) + (dragCoefficient.x);
 		float verticalDrag = (dragCoefficient.y * (velocity.y * velocity.y)) + (dragCoefficient.y);
 
-		Debug.Log ("horDrag = " + horizontalDrag + " horVel = " + velocity.x + " Time.delta " + Time.deltaTime);
-
 		if (velocity.x > horizontalDrag) {
 			velocity.x -= horizontalDrag; //physical drag applied
 		} else if (velocity.x < -horizontalDrag) {
@@ -69,8 +73,6 @@ public class FishController : MonoBehaviour {
 		} else {
 			velocity.x = 0; //prevent too small velocities
 		}
-
-		Debug.Log ("results in " + ((velocity.x - horizontalDrag) * Time.deltaTime * 60));
 
 		if (velocity.y > verticalDrag) {
 			velocity.y -= verticalDrag; //physical drag applied
@@ -84,7 +86,7 @@ public class FishController : MonoBehaviour {
 		velocity.y = Mathf.Clamp (velocity.y, (maximumVelocity.y * -1), maximumVelocity.y); //clamp between max and min velocity
 		
 		this.transform.position = new Vector3(this.transform.position.x + (velocity.x * Time.deltaTime), 
-		                                      this.transform.position.y + (velocity.y * Time.deltaTime), 
+		                                      Mathf.Clamp((this.transform.position.y + (velocity.y * Time.deltaTime)),float.MinValue,maximumYPosition), 
 		                                      this.transform.position.z);
 	}
 

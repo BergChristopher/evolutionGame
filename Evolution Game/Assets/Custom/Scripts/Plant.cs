@@ -2,6 +2,8 @@
 using System.Collections;
 
 public class Plant : MonoBehaviour {
+		
+	public PlantType plantType = PlantType.REGULAR_PLANT;
 
 	// Use this for initialization
 	void Start () {
@@ -17,9 +19,12 @@ public class Plant : MonoBehaviour {
 		if (enteringCollider.gameObject.tag == "Player") {
 			FishController fish = enteringCollider.GetComponent<FishController>();
 			if(fish != null && fish.getIsReadyToEat()) {
+				GameStatistics.addEatenPlant(this.plantType);
 				Destroy(this.gameObject);
 			}
 		}
 	}
 
 }
+
+public enum PlantType { REGULAR_PLANT };

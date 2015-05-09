@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class LevelCollider : MonoBehaviour {
+public class LevelRespawnCollider : MonoBehaviour {
 
 	public Vector3 startPosition = new Vector3(0,0,0);
 
@@ -17,6 +17,5 @@ public class LevelCollider : MonoBehaviour {
 
 	void OnTriggerEnter2D(Collider2D other) {
 		other.gameObject.transform.position = startPosition;
-
 	}
 }
