@@ -20,6 +20,7 @@ public class Plant : MonoBehaviour {
 			FishController fish = enteringCollider.GetComponent<FishController>();
 			if(fish != null && fish.getIsReadyToEat()) {
 				GameStatistics.addEatenPlant(this.plantType);
+				fish.evolve();
 				Destroy(this.gameObject);
 			}
 		}

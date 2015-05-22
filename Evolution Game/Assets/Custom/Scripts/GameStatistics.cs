@@ -28,4 +28,8 @@ public static class GameStatistics {
 			break;
 		}
 	}
+
+	public static int getAmountRegularPlants() {
+		return eatenRegularPlants;
+	}
 }

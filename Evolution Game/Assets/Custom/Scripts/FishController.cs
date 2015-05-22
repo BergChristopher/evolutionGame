@@ -100,4 +100,11 @@ public class FishController : MonoBehaviour {
 			isReadyToEat = false;
 		}
 	}
+
+	public void evolve() {
+		if (GameStatistics.getAmountRegularPlants() == 6) {
+			swimAcceleration = new Vector2 (10f,5f);
+			maximumVelocity = new Vector2 (40f,20f);
+		}
+	}
 }
