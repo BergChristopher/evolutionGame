@@ -39,9 +39,20 @@ public class FishController : MonoBehaviour {
 		return isReadyToEat;
 	}
 
+	public Vector2 getVelocity() {
+		return velocity;
+	}
+
 	public void die() {
 		isAlive = false;
 		Destroy (this.gameObject);
+	}
+
+	public void evolve() {
+		if (GameStatistics.getAmountRegularPlants() == 6) {
+			swimAcceleration = new Vector2 (10f,5f);
+			maximumVelocity = new Vector2 (40f,20f);
+		}
 	}
 
 	private void updateFacingDirection() {
@@ -86,7 +97,7 @@ public class FishController : MonoBehaviour {
 		velocity.y = Mathf.Clamp (velocity.y, (maximumVelocity.y * -1), maximumVelocity.y); //clamp between max and min velocity
 		
 		this.transform.position = new Vector3(this.transform.position.x + (velocity.x * Time.deltaTime), 
-		                                      Mathf.Clamp((this.transform.position.y + (velocity.y * Time.deltaTime)),float.MinValue,maximumYPosition), 
+		                                      Mathf.Clamp((this.transform.position.y + (velocity.y * Time.deltaTime)), float.MinValue, maximumYPosition), 
 		                                      this.transform.position.z);
 	}
 
@@ -101,10 +112,4 @@ public class FishController : MonoBehaviour {
 		}
 	}
 
-	public void evolve() {
-		if (GameStatistics.getAmountRegularPlants() == 6) {
-			swimAcceleration = new Vector2 (10f,5f);
-			maximumVelocity = new Vector2 (40f,20f);
-		}
-	}
 }

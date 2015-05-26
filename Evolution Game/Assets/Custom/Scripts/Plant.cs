@@ -16,7 +16,7 @@ public class Plant : MonoBehaviour {
 	}
 
 	void OnTriggerEnter2D (Collider2D enteringCollider) {
-		if (enteringCollider.gameObject.tag == "Player") {
+		if (enteringCollider.gameObject.tag == "Player" && enteringCollider.GetType().Equals(typeof(CircleCollider2D))) {
 			FishController fish = enteringCollider.GetComponent<FishController>();
 			if(fish != null && fish.getIsReadyToEat()) {
 				GameStatistics.addEatenPlant(this.plantType);
