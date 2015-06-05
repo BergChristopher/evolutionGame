@@ -3,6 +3,8 @@ using System.Collections;
 
 public static class GameStatistics {
 
+	private static int lives = 0;
+
 	private static int eatenPlants = 0;
 	private static int eatenRegularPlants = 0;
 
@@ -29,7 +31,21 @@ public static class GameStatistics {
 		}
 	}
 
+	public static void incrementLives() {
+		lives += 1;
+		GUIManager.instance.setLivesText();
+	}
+
+	public static void decrementLives() {
+		lives -= 1;
+		GUIManager.instance.setLivesText();
+	}
+
 	public static int getAmountRegularPlants() {
 		return eatenRegularPlants;
+	}
+
+	public static int getLives() {
+		return lives;
 	}
 }

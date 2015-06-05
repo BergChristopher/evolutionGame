@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class FishController : MonoBehaviour {
 
@@ -8,6 +9,7 @@ public class FishController : MonoBehaviour {
 	public Vector2 swimAcceleration = new Vector2 (4f,2f);
 	public Vector2 dragCoefficient = new Vector2 (0.01f, 0.015f);
 	public Vector2 maximumVelocity = new Vector2 (20f,10f); // units per second
+	public GameObject eggNest; //the parent gameobject of all eggs
 
 	public float maximumYPosition = 12.7f;
 
@@ -17,12 +19,30 @@ public class FishController : MonoBehaviour {
 	private bool isFacingRight = true;
 	private bool isReadyToEat = false;
 	private bool isAlive = true;
+	private List<GameObject> eggs = new List<GameObject>();
+	private SpriteRenderer spriteRenderer;
 
 	// Use this for initialization
 	void Start () {
 		animator = this.GetComponent<Animator>();
 		if (animator == null) {
 			Debug.LogWarning("No animator attached to FishController on " + this.name);
+		}
+		if(eggNest == null) {
+			Debug.LogWarning("No eggNest attached to FishController on " + this.name);
+		} else {
+			foreach (Transform child in eggNest.transform)
+			{
+				if(child.tag == "Egg") {
+					GameStatistics.incrementLives();
+					eggs.Add(child.gameObject);
+				}
+			}
+		}
+		if(GetComponent<SpriteRenderer>() != null) {
+			spriteRenderer = GetComponent<SpriteRenderer>();
+		} else {
+			Debug.LogWarning("No SpriteRenderer attached to FishController on " + this.name);
 		}
 	}
 	
@@ -44,14 +64,26 @@ public class FishController : MonoBehaviour {
 	}
 
 	public void die() {
-		isAlive = false;
-		Destroy (this.gameObject);
+		GameStatistics.decrementLives();
+		if(GameStatistics.getLives() < 0) {
+			isAlive = false;
+			Destroy (this.gameObject);
+		} else {
+			GameObject currentEgg = eggs[eggs.Count - 1]; 
+			this.transform.position = currentEgg.transform.position;
+			eggs.Remove(currentEgg);
+			Destroy(currentEgg);
+			isFacingRight = true;
+			this.transform.rotation = new Quaternion (this.transform.rotation.x, 180, this.transform.rotation.z, this.transform.rotation.w);
+		}
+
 	}
 
 	public void evolve() {
 		if (GameStatistics.getAmountRegularPlants() == 6) {
 			swimAcceleration = new Vector2 (10f,5f);
 			maximumVelocity = new Vector2 (40f,20f);
+			spriteRenderer.color = new Color(1f,0.3f,0.3f,1f);
 		}
 	}
 
@@ -102,13 +134,18 @@ public class FishController : MonoBehaviour {
 	}
 
 	private void updateAnimation() {
-		if (Input.GetKeyDown (KeyCode.Space)) {
+		if (Input.GetKeyDown (KeyCode.Space) && !isReadyToEat) {
 			animator.SetInteger("Action",1); //Action 1 indicates a transition to the eat animation
 			isReadyToEat = true;
+			swimAcceleration *= 0.5f;
+			maximumVelocity *= 0.5f;
+
 		}
-		if (Input.GetKeyUp (KeyCode.Space)) {
+		if (Input.GetKeyUp (KeyCode.Space) && isReadyToEat) {
 			animator.SetInteger("Action",0); //Action 0 indicates a transition to the normal animation
 			isReadyToEat = false;
+			swimAcceleration *= 2f;
+			maximumVelocity *= 2f;
 		}
 	}
 
