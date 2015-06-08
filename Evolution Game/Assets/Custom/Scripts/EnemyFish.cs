@@ -5,33 +5,54 @@ using System.Collections.Generic;
 public class EnemyFish : MonoBehaviour {
 
 	public FishType fishType = FishType.TEETH_FISH;
+	public MovementType movementType = MovementType.HORIZONTAL;
 	public bool isMoving = true;
 	public float speed = 3;
 	public List<Transform> waypoints = new List<Transform>(); 
 
+	public float awarenessRadius = 15f; 
+	
 	private bool isFacingRight = true;
 
+	//waypoint based movement variables
 	private int currentWaypoint = 0;
+
+	//horizontal movement variables 
 	private float lastCollission = 0; 
+
+	//follow player based movement 
+	private GameObject player = null;
+	private float lastRotation = 0;
+
 
 	// Use this for initialization
 	void Start () {
-		if(waypoints.Count < 2 && fishType.Equals(FishType.TEETH_FISH)) {
-			Debug.LogWarning("Your fish " + name + " has less than 2 waypoints assigned ");
+		if(waypoints.Count < 2 && movementType.Equals(MovementType.WAYPOINT_BASED)) {
+			Debug.LogWarning("Your fish " + name + " has less than 2 waypoints assigned.");
 		}
 		if(speed < 0) {
 			Debug.LogWarning("Your fish " + name + " has a speed less than 0, it will be converted to " + Mathf.Abs(speed) + ".");
+		}
+		player = GameObject.FindGameObjectWithTag("Player");
+		if(player == null || player.GetComponent<FishController>() == null) {
+			player = null;
+			if(movementType.Equals(MovementType.FOLLOW_PLAYER)) {
+				Debug.LogWarning("Your fish " + name + " cannot find the player.");
+			}
 		}
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		if(isMoving) {
-			if(fishType.Equals(FishType.TEETH_FISH)) {
+			if(movementType.Equals(MovementType.WAYPOINT_BASED)) {
 				updateWaypointBasedFishMovement();
 				updateWaypointBasedDirection();
-			} else {
+			} else if(movementType.Equals(MovementType.HORIZONTAL)) {
 				updateNormalFishMovement();
+			} else if(movementType.Equals(MovementType.FOLLOW_PLAYER)) {
+				updateFollowPlayerBasedMovement();
+				updateFollowPlayerBasedDirection();
 			}
 
 			updateRotation();
@@ -39,7 +60,7 @@ public class EnemyFish : MonoBehaviour {
 		
 	}
 
-	void OnTriggerEnter2D (Collider2D enteringCollider) {
+	void OnTriggerEnter2D(Collider2D enteringCollider) {
 		//eat player
 		if(fishType.Equals(FishType.TEETH_FISH) || fishType.Equals(FishType.WHITE_SHARK)) {
 			if (enteringCollider.gameObject.tag == "Player") {
@@ -52,7 +73,7 @@ public class EnemyFish : MonoBehaviour {
 		}
 
 		//change direction on touching ground
-		if(fishType.Equals(FishType.NEUTRAL_FISH) || fishType.Equals(FishType.WHITE_SHARK)) {
+		if(movementType.Equals(MovementType.HORIZONTAL)) {
 			if(enteringCollider.gameObject.tag == "Environment" && (lastCollission + 1f) < Time.time ) {
 				isFacingRight = !isFacingRight;
 				lastCollission = Time.time;
@@ -75,9 +96,9 @@ public class EnemyFish : MonoBehaviour {
 	}
 
 	private void updateWaypointBasedDirection() {
-		if(transform.rotation.x < waypoints[currentWaypoint].position.x) {
+		if(!isFacingRight && transform.position.x < waypoints[currentWaypoint].position.x) {
 			isFacingRight = true;
-		} else if(transform.rotation.x > waypoints[currentWaypoint].position.x){
+		} else if(isFacingRight && transform.position.x > waypoints[currentWaypoint].position.x){
 			isFacingRight = false;
 		}
 	}
@@ -93,15 +114,56 @@ public class EnemyFish : MonoBehaviour {
 		transform.position = new Vector3(fishPosition.x, fishPosition.y, this.transform.position.z);
 	}
 
+	private void updateFollowPlayerBasedMovement() {
+		Vector2 playerPosition = new Vector2(player.transform.position.x, player.transform.position.y);
+		if (Vector2.Distance(playerPosition, getMouthPosition()) < awarenessRadius) {
+			Vector2 fishMouthPosition = getMouthPosition();
+			Vector2 newFishMouthPosition = Vector2.MoveTowards(fishMouthPosition, playerPosition, Mathf.Abs(speed * Time.deltaTime));
+
+			Vector2 movement = newFishMouthPosition - fishMouthPosition;
+
+			Debug.Log (Vector2.Distance(playerPosition, this.transform.position) + " and " + Vector2.Distance(playerPosition, getMouthPosition()));
+			transform.position = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
+		}
+	}
+
+	private void updateFollowPlayerBasedDirection() { 
+		Vector2 playerPosition = new Vector2(player.transform.position.x, player.transform.position.y);
+		if(!isFacingRight && getMouthPosition().x < playerPosition.x && (lastRotation + 1f) < Time.time) {
+			isFacingRight = true;
+			lastRotation = Time.time;
+		} else if(isFacingRight && getMouthPosition().x > playerPosition.x && (lastRotation + 1f) < Time.time){
+			isFacingRight = false;
+			lastRotation = Time.time;
+		}
+	}
+
 	private void updateRotation() {
 		Quaternion fishRotation = transform.rotation;
 		if(isFacingRight) {
 			fishRotation.y = 180;
-		} else if(!isFacingRight){
+		} else {
 			fishRotation.y = 0;
 		}
 		transform.rotation = fishRotation; 
 	}
+
+	private Vector2 getMouthPosition() {
+		Vector2 thisPosition = new Vector2 (this.transform.position.x, this.transform.position.y);
+		if(GetComponents<CircleCollider2D>().Length > 1) {
+			Debug.LogWarning(this.name + " has more than one Circle Collider attached, which could be the mouth.");
+		} else if(GetComponent<CircleCollider2D>() != null) {
+			Vector2 offset = new Vector2(this.transform.localScale.x * GetComponent<CircleCollider2D>().offset.x, this.transform.localScale.y * GetComponent<CircleCollider2D>().offset.y);
+			if(isFacingRight) {
+				offset.x *= -1;
+			}
+			thisPosition += offset;
+		} else {
+			Debug.LogWarning(this.name + " has no Circle Collider attached, which could be the mouth.");
+		}
+		return thisPosition;
+	}
 }
 
 public enum FishType { TEETH_FISH, NEUTRAL_FISH, WHITE_SHARK };
+public enum MovementType { WAYPOINT_BASED, HORIZONTAL, FOLLOW_PLAYER };
