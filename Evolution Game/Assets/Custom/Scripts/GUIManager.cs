@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GUIManager : MonoBehaviour {
 
@@ -41,7 +42,7 @@ public class GUIManager : MonoBehaviour {
 		}
 	}
 
-	public void setLivesText() {
+	public void updateLivesText() {
 		lives.text = "You have ";
 		if(GameStatistics.getLives() == 1) {
 			lives.text += "one live";
@@ -49,6 +50,30 @@ public class GUIManager : MonoBehaviour {
 			lives.text += GameStatistics.getLives() + " lives";
 		}
 		lives.text += " remaining.";
+	}
+
+	public void updateDeathsText() {
+		Dictionary<FishType, int> deathsByFishType = GameStatistics.getDeathByFishType(); 
+
+		deaths.text = "You have been killed ";
+		if(GameStatistics.getDeaths() == 1) {
+			deaths.text += "one time.";
+		} else {
+			deaths.text += GameStatistics.getDeaths() + " times.";
+		}
+
+		deaths.text += "\nOf those kills, ";
+		if(GameStatistics.getDeathsByFish() == 1) {
+			deaths.text += "one was";
+		} else {
+			deaths.text += GameStatistics.getDeathsByFish() + " were";
+		}
+		deaths.text += " caused by other fish.\n\n";
+
+		foreach(KeyValuePair<FishType, int> pair in deathsByFishType) {
+			deaths.text += pair.Key.ToString() + ": " + pair.Value.ToString() + "\n";
+		}
+
 	}
 
 }

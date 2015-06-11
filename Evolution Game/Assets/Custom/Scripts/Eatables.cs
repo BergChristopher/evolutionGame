@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Plant : MonoBehaviour {
+public class Eatables : MonoBehaviour {
 		
-	public PlantType plantType = PlantType.REGULAR_PLANT;
+	public EatableType eatableType = EatableType.REGULAR_PLANT;
 
 	// Use this for initialization
 	void Start () {
@@ -19,7 +19,7 @@ public class Plant : MonoBehaviour {
 		if (enteringCollider.gameObject.tag == "Player" && enteringCollider.GetType().Equals(typeof(CircleCollider2D))) {
 			FishController fish = enteringCollider.GetComponent<FishController>();
 			if(fish != null && fish.getIsReadyToEat()) {
-				GameStatistics.addEatenPlant(this.plantType);
+				GameStatistics.addEatable(this.eatableType);
 				fish.evolve();
 				Destroy(this.gameObject);
 			}
@@ -28,4 +28,4 @@ public class Plant : MonoBehaviour {
 
 }
 
-public enum PlantType { REGULAR_PLANT };
+public enum EatableType { REGULAR_PLANT, ENEMY_FISH_EGG };

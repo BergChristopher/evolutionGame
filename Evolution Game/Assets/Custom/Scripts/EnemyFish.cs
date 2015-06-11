@@ -40,6 +40,7 @@ public class EnemyFish : MonoBehaviour {
 				Debug.LogWarning("Your fish " + name + " cannot find the player.");
 			}
 		}
+		isFacingRight = this.transform.rotation.y == 1; //represents 180/540/-180/etc degree 
 	}
 	
 	// Update is called once per frame
@@ -122,17 +123,17 @@ public class EnemyFish : MonoBehaviour {
 
 			Vector2 movement = newFishMouthPosition - fishMouthPosition;
 
-			Debug.Log (Vector2.Distance(playerPosition, this.transform.position) + " and " + Vector2.Distance(playerPosition, getMouthPosition()));
 			transform.position = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
 		}
 	}
 
 	private void updateFollowPlayerBasedDirection() { 
 		Vector2 playerPosition = new Vector2(player.transform.position.x, player.transform.position.y);
-		if(!isFacingRight && getMouthPosition().x < playerPosition.x && (lastRotation + 1f) < Time.time) {
+		Vector2 fishMouthPosition = getMouthPosition();
+		if(!isFacingRight && fishMouthPosition.x + (Mathf.Abs(fishMouthPosition.x - transform.position.x) / 2) < playerPosition.x && (lastRotation + 1f) < Time.time) {
 			isFacingRight = true;
 			lastRotation = Time.time;
-		} else if(isFacingRight && getMouthPosition().x > playerPosition.x && (lastRotation + 1f) < Time.time){
+		} else if(isFacingRight && fishMouthPosition.x - (Mathf.Abs(fishMouthPosition.x - transform.position.x) / 2) > playerPosition.x && (lastRotation + 1f) < Time.time){
 			isFacingRight = false;
 			lastRotation = Time.time;
 		}
@@ -149,7 +150,7 @@ public class EnemyFish : MonoBehaviour {
 	}
 
 	private Vector2 getMouthPosition() {
-		Vector2 thisPosition = new Vector2 (this.transform.position.x, this.transform.position.y);
+		Vector2 result = new Vector2 (this.transform.position.x, this.transform.position.y);
 		if(GetComponents<CircleCollider2D>().Length > 1) {
 			Debug.LogWarning(this.name + " has more than one Circle Collider attached, which could be the mouth.");
 		} else if(GetComponent<CircleCollider2D>() != null) {
@@ -157,11 +158,11 @@ public class EnemyFish : MonoBehaviour {
 			if(isFacingRight) {
 				offset.x *= -1;
 			}
-			thisPosition += offset;
+			result += offset;
 		} else {
 			Debug.LogWarning(this.name + " has no Circle Collider attached, which could be the mouth.");
 		}
-		return thisPosition;
+		return result;
 	}
 }
 

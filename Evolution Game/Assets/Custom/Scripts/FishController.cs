@@ -80,7 +80,7 @@ public class FishController : MonoBehaviour {
 	}
 
 	public void evolve() {
-		if (GameStatistics.getAmountRegularPlants() == 6) {
+		if (GameStatistics.getEatenRegularPlants() == 6) {
 			swimAcceleration = new Vector2 (10f,5f);
 			maximumVelocity = new Vector2 (40f,20f);
 			spriteRenderer.color = new Color(1f,0.3f,0.3f,1f);
