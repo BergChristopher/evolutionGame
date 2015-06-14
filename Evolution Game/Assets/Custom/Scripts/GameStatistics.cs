@@ -6,21 +6,22 @@ public static class GameStatistics {
 
 	private static int lives = 0;
 
-	private static int eatenEatables = 0;
-	private static Dictionary<EatableType, int> eatenEatablesByType = new Dictionary<EatableType, int>();
+	private static int gatheredCollectables = 0;
+	private static Dictionary<CollectableType, int> gatheredCollectablesByType = new Dictionary<CollectableType, int>();
 	//private static int eatenRegularPlants = 0;
 
 	private static int deaths = 0;
 	private static int deathsByFish = 0;
 	private static Dictionary<FishType,int> deathsByFishType = new Dictionary<FishType, int>();
 	
-	public static void addEatable(EatableType eatableType) {
-		eatenEatables += 1;
-		if (eatenEatablesByType.ContainsKey(eatableType)) {
-			eatenEatablesByType[eatableType] += 1;
+	public static void addCollectable(CollectableType collectableType) {
+		gatheredCollectables += 1;
+		if (gatheredCollectablesByType.ContainsKey(collectableType)) {
+			gatheredCollectablesByType[collectableType] += 1;
 		} else {
-			eatenEatablesByType.Add(eatableType, 1);
+			gatheredCollectablesByType.Add(collectableType, 1);
 		}
+		GUIManager.instance.updateCollectablesText();
 	}
 
 	public static void addDeathByFish(FishType fishType) {
@@ -31,7 +32,7 @@ public static class GameStatistics {
 		} else {
 			deathsByFishType.Add(fishType, 1);
 		}
-		GUIManager.instance.updateDeathsText();
+		//GUIManager.instance.updateDeathsText();
 	}
 
 	public static void incrementLives() {
@@ -46,8 +47,8 @@ public static class GameStatistics {
 
 	public static int getEatenRegularPlants() {
 		int result = 0;
-		if(eatenEatablesByType.ContainsKey(EatableType.REGULAR_PLANT)) {
-			result = eatenEatablesByType[EatableType.REGULAR_PLANT];
+		if(gatheredCollectablesByType.ContainsKey(CollectableType.REGULAR_PLANT)) {
+			result = gatheredCollectablesByType[CollectableType.REGULAR_PLANT];
 		}
 		return result;
 	}
@@ -66,5 +67,9 @@ public static class GameStatistics {
 
 	public static int getDeathsByFish() {
 		return deathsByFish;
+	}
+
+	public static Dictionary<CollectableType, int> getGatheredCollectables() {
+		return gatheredCollectablesByType;
 	}
 }

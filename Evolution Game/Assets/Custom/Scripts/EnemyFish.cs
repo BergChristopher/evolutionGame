@@ -6,6 +6,7 @@ public class EnemyFish : MonoBehaviour {
 
 	public FishType fishType = FishType.TEETH_FISH;
 	public MovementType movementType = MovementType.HORIZONTAL;
+	public MovementType secondaryMovementType =MovementType.NONE;
 	public bool isMoving = true;
 	public float speed = 3;
 	public List<Transform> waypoints = new List<Transform>(); 
@@ -24,6 +25,9 @@ public class EnemyFish : MonoBehaviour {
 	private GameObject player = null;
 	private float lastRotation = 0;
 
+	//guard starting spot variables
+	private Vector2 guardedSpot = Vector2.zero;
+
 
 	// Use this for initialization
 	void Start () {
@@ -40,24 +44,13 @@ public class EnemyFish : MonoBehaviour {
 				Debug.LogWarning("Your fish " + name + " cannot find the player.");
 			}
 		}
-		isFacingRight = this.transform.rotation.y == 1; //represents 180/540/-180/etc degree 
+		isFacingRight = this.transform.rotation.y == 180;  
+		guardedSpot = new Vector2(this.transform.position.x, this.transform.position.y);
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if(isMoving) {
-			if(movementType.Equals(MovementType.WAYPOINT_BASED)) {
-				updateWaypointBasedFishMovement();
-				updateWaypointBasedDirection();
-			} else if(movementType.Equals(MovementType.HORIZONTAL)) {
-				updateNormalFishMovement();
-			} else if(movementType.Equals(MovementType.FOLLOW_PLAYER)) {
-				updateFollowPlayerBasedMovement();
-				updateFollowPlayerBasedDirection();
-			}
-
-			updateRotation();
-		}
+		updateMovement(movementType);
 		
 	}
 
@@ -74,11 +67,31 @@ public class EnemyFish : MonoBehaviour {
 		}
 
 		//change direction on touching ground
-		if(movementType.Equals(MovementType.HORIZONTAL)) {
-			if(enteringCollider.gameObject.tag == "Environment" && (lastCollission + 1f) < Time.time ) {
-				isFacingRight = !isFacingRight;
-				lastCollission = Time.time;
+		if(enteringCollider.gameObject.tag == "Environment" && (lastCollission + 1f) < Time.time ) {
+			isFacingRight = !isFacingRight;
+			lastCollission = Time.time;
+		}
+	}
+
+	void updateMovement(MovementType currentMovementType)
+	{
+		if (isMoving) {
+			if (currentMovementType.Equals (MovementType.WAYPOINT_BASED)) {
+				updateWaypointBasedFishMovement ();
+				updateWaypointBasedDirection ();
 			}
+			else if (currentMovementType.Equals (MovementType.HORIZONTAL)) {
+				updateNormalFishMovement ();
+			}
+			else if (currentMovementType.Equals (MovementType.FOLLOW_PLAYER)) {
+				updateMoveToTarget (new Vector2 (player.transform.position.x, player.transform.position.y), false);
+				updateDirectionToTarget (new Vector2 (player.transform.position.x, player.transform.position.y), false);
+			}
+			else if (currentMovementType.Equals (MovementType.GUARD_STARTING_SPOT)) {
+				updateMoveToTarget (guardedSpot, true);
+				updateDirectionToTarget (guardedSpot, true);
+			}
+			updateRotation ();
 		}
 	}
 
@@ -115,28 +128,30 @@ public class EnemyFish : MonoBehaviour {
 		transform.position = new Vector3(fishPosition.x, fishPosition.y, this.transform.position.z);
 	}
 
-	private void updateFollowPlayerBasedMovement() {
-		Vector2 playerPosition = new Vector2(player.transform.position.x, player.transform.position.y);
-		if (Vector2.Distance(playerPosition, getMouthPosition()) < awarenessRadius) {
+	private void updateMoveToTarget(Vector2 target, bool ignoreAwarenessRadius) {
+		if (ignoreAwarenessRadius || Vector2.Distance(target, getMouthPosition()) < awarenessRadius) {
 			Vector2 fishMouthPosition = getMouthPosition();
-			Vector2 newFishMouthPosition = Vector2.MoveTowards(fishMouthPosition, playerPosition, Mathf.Abs(speed * Time.deltaTime));
+			Vector2 newFishMouthPosition = Vector2.MoveTowards(fishMouthPosition, target, Mathf.Abs(speed * Time.deltaTime));
 
 			Vector2 movement = newFishMouthPosition - fishMouthPosition;
 
 			transform.position = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
+		} else {
+			updateMovement(secondaryMovementType);
 		}
 	}
 
-	private void updateFollowPlayerBasedDirection() { 
-		Vector2 playerPosition = new Vector2(player.transform.position.x, player.transform.position.y);
+	private void updateDirectionToTarget(Vector2 target, bool ignoreAwarenessRadius) { 
 		Vector2 fishMouthPosition = getMouthPosition();
-		if(!isFacingRight && fishMouthPosition.x + (Mathf.Abs(fishMouthPosition.x - transform.position.x) / 2) < playerPosition.x && (lastRotation + 1f) < Time.time) {
-			isFacingRight = true;
-			lastRotation = Time.time;
-		} else if(isFacingRight && fishMouthPosition.x - (Mathf.Abs(fishMouthPosition.x - transform.position.x) / 2) > playerPosition.x && (lastRotation + 1f) < Time.time){
-			isFacingRight = false;
-			lastRotation = Time.time;
-		}
+		if (ignoreAwarenessRadius || Vector2.Distance(target, getMouthPosition()) < awarenessRadius) {
+			if(!isFacingRight && fishMouthPosition.x + (Mathf.Abs(fishMouthPosition.x - transform.position.x) / 2) < target.x && (lastRotation + 1f) < Time.time) {
+				isFacingRight = true;
+				lastRotation = Time.time;
+			} else if(isFacingRight && fishMouthPosition.x - (Mathf.Abs(fishMouthPosition.x - transform.position.x) / 2) > target.x && (lastRotation + 1f) < Time.time){
+				isFacingRight = false;
+				lastRotation = Time.time;
+			}
+		} 
 	}
 
 	private void updateRotation() {
@@ -167,4 +182,4 @@ public class EnemyFish : MonoBehaviour {
 }
 
 public enum FishType { TEETH_FISH, NEUTRAL_FISH, WHITE_SHARK };
-public enum MovementType { WAYPOINT_BASED, HORIZONTAL, FOLLOW_PLAYER };
+public enum MovementType { NONE, WAYPOINT_BASED, HORIZONTAL, FOLLOW_PLAYER, GUARD_STARTING_SPOT  };

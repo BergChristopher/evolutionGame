@@ -8,6 +8,7 @@ public class GUIManager : MonoBehaviour {
 	private static GUIManager _instance;
 
 	public Text lives;
+	public Text collectables;
 	public Text deaths;
 
 	public static GUIManager instance {
@@ -40,40 +41,56 @@ public class GUIManager : MonoBehaviour {
 		if(deaths == null) {
 			Debug.LogError("No Text for deaths attached to " + this.name);
 		}
+		if(collectables == null) {
+			Debug.LogError("No Text for collectables attached to " + this.name);
+		}
 	}
 
 	public void updateLivesText() {
-		lives.text = "You have ";
-		if(GameStatistics.getLives() == 1) {
-			lives.text += "one live";
-		} else {
-			lives.text += GameStatistics.getLives() + " lives";
+		if(lives != null) {
+			lives.text = "You have ";
+			if(GameStatistics.getLives() == 1) {
+				lives.text += "one live";
+			} else {
+				lives.text += GameStatistics.getLives() + " lives";
+			}
+			lives.text += " remaining.";
 		}
-		lives.text += " remaining.";
 	}
 
 	public void updateDeathsText() {
-		Dictionary<FishType, int> deathsByFishType = GameStatistics.getDeathByFishType(); 
+		if(deaths != null) {
+			Dictionary<FishType, int> deathsByFishType = GameStatistics.getDeathByFishType(); 
 
-		deaths.text = "You have been killed ";
-		if(GameStatistics.getDeaths() == 1) {
-			deaths.text += "one time.";
-		} else {
-			deaths.text += GameStatistics.getDeaths() + " times.";
+			deaths.text = "You have been killed ";
+			if(GameStatistics.getDeaths() == 1) {
+				deaths.text += "one time.";
+			} else {
+				deaths.text += GameStatistics.getDeaths() + " times.";
+			}
+
+			deaths.text += "\nOf those kills, ";
+			if(GameStatistics.getDeathsByFish() == 1) {
+				deaths.text += "one was";
+			} else {
+				deaths.text += GameStatistics.getDeathsByFish() + " were";
+			}
+			deaths.text += " caused by other fish.\n\n";
+
+			foreach(KeyValuePair<FishType, int> pair in deathsByFishType) {
+				deaths.text += pair.Key.ToString() + ": " + pair.Value.ToString() + "\n";
+			}
 		}
+	}
 
-		deaths.text += "\nOf those kills, ";
-		if(GameStatistics.getDeathsByFish() == 1) {
-			deaths.text += "one was";
-		} else {
-			deaths.text += GameStatistics.getDeathsByFish() + " were";
+	public void updateCollectablesText() {
+		if(collectables != null) {
+			Dictionary<CollectableType, int> gatheredCollectables = GameStatistics.getGatheredCollectables(); 
+			collectables.text = "";
+			foreach (KeyValuePair<CollectableType, int> pair in gatheredCollectables) {
+				collectables.text += pair.Key.ToString() + ": " + pair.Value.ToString() + "\n";
+			}
 		}
-		deaths.text += " caused by other fish.\n\n";
-
-		foreach(KeyValuePair<FishType, int> pair in deathsByFishType) {
-			deaths.text += pair.Key.ToString() + ": " + pair.Value.ToString() + "\n";
-		}
-
 	}
 
 }
