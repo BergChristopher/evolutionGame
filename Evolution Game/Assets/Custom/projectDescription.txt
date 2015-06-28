@@ -60,9 +60,7 @@ Fisch kann springen
 Man braucht neue Faehigkeiten um weiterzukommen
 	 (schneller gegen Stroeme schwimmen)	
 EVO 
-	
-Fischcollider anpassen auf Mund
- 	
+Kameraeinstellungen anpassen (links den Rand) und dass sie nicht zu weit nach unten und oben weggeht wenn man schnell ist 	
 	
 	
 	

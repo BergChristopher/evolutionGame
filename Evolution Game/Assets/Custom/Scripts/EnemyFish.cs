@@ -9,11 +9,13 @@ public class EnemyFish : MonoBehaviour {
 	public MovementType secondaryMovementType =MovementType.NONE;
 	public bool isMoving = true;
 	public float speed = 3;
+	public float rotationSpeed = 50;
 	public List<Transform> waypoints = new List<Transform>(); 
 
 	public float awarenessRadius = 15f; 
 	
 	private bool isFacingRight = true;
+	private bool isTurning = false;
 
 	//waypoint based movement variables
 	private int currentWaypoint = 0;
@@ -44,7 +46,7 @@ public class EnemyFish : MonoBehaviour {
 				Debug.LogWarning("Your fish " + name + " cannot find the player.");
 			}
 		}
-		isFacingRight = this.transform.rotation.y == 180;  
+		isFacingRight = Mathf.Abs((this.transform.rotation.eulerAngles.y % 360) - 180) <= 45;  
 		guardedSpot = new Vector2(this.transform.position.x, this.transform.position.y);
 	}
 	
@@ -68,7 +70,8 @@ public class EnemyFish : MonoBehaviour {
 
 		//change direction on touching ground
 		if(enteringCollider.gameObject.tag == "Environment" && (lastCollission + 1f) < Time.time ) {
-			isFacingRight = !isFacingRight;
+			Debug.Log (name + " collided");
+			turnFish();
 			lastCollission = Time.time;
 		}
 	}
@@ -84,8 +87,12 @@ public class EnemyFish : MonoBehaviour {
 				updateNormalFishMovement ();
 			}
 			else if (currentMovementType.Equals (MovementType.FOLLOW_PLAYER)) {
-				updateMoveToTarget (new Vector2 (player.transform.position.x, player.transform.position.y), false);
-				updateDirectionToTarget (new Vector2 (player.transform.position.x, player.transform.position.y), false);
+				if(player == null) {
+					Debug.LogWarning("No player attached to " + name );
+				} else {
+					updateMoveToTarget (new Vector2 (player.transform.position.x, player.transform.position.y), false);
+					updateDirectionToTarget (new Vector2 (player.transform.position.x, player.transform.position.y), false);
+				}
 			}
 			else if (currentMovementType.Equals (MovementType.GUARD_STARTING_SPOT)) {
 				updateMoveToTarget (guardedSpot, true);
@@ -96,72 +103,93 @@ public class EnemyFish : MonoBehaviour {
 	}
 
 	private void updateWaypointBasedFishMovement() {
-		if (waypoints.Count >= 2) {
-			Vector2 fishPosition = new Vector2(transform.position.x, transform.position.y);
-			Vector2 target = new Vector2(waypoints[currentWaypoint].position.x, waypoints[currentWaypoint].position.y);
-			fishPosition = Vector2.MoveTowards(fishPosition, target, Mathf.Abs(speed * Time.deltaTime));
+		if(!isTurning) {
+			if (waypoints.Count >= 2) {
+				Vector2 fishPosition = new Vector2(transform.position.x, transform.position.y);
+				Vector2 target = new Vector2(waypoints[currentWaypoint].position.x, waypoints[currentWaypoint].position.y);
+				fishPosition = Vector2.MoveTowards(fishPosition, target, Mathf.Abs(speed * Time.deltaTime));
 
-			if(fishPosition.x == target.x && fishPosition.y == target.y) {
-				currentWaypoint = (currentWaypoint + 1) % waypoints.Count;
+				if(fishPosition.x == target.x && fishPosition.y == target.y) {
+					currentWaypoint = (currentWaypoint + 1) % waypoints.Count;
+				}
+
+				transform.position = new Vector3(fishPosition.x, fishPosition.y, this.transform.position.z);
 			}
+		}
+	}
+
+	private void updateWaypointBasedDirection() {
+		if(!isTurning) {
+			if(!isFacingRight && transform.position.x < waypoints[currentWaypoint].position.x) {
+				turnFish();
+			} else if(isFacingRight&& transform.position.x > waypoints[currentWaypoint].position.x){
+				turnFish ();
+			}
+		}
+	}
+
+	private void updateNormalFishMovement() {
+		if(!isTurning) {
+			Vector2 fishPosition = new Vector2(transform.position.x, transform.position.y);
+			Vector2 target = new Vector2(transform.position.x + 100f, transform.position.y);
+			if(!isFacingRight) {
+				target.x = transform.position.x -100f;
+			}
+			fishPosition = Vector2.MoveTowards(fishPosition, target, Mathf.Abs(speed * Time.deltaTime));
 
 			transform.position = new Vector3(fishPosition.x, fishPosition.y, this.transform.position.z);
 		}
 	}
 
-	private void updateWaypointBasedDirection() {
-		if(!isFacingRight && transform.position.x < waypoints[currentWaypoint].position.x) {
-			isFacingRight = true;
-		} else if(isFacingRight && transform.position.x > waypoints[currentWaypoint].position.x){
-			isFacingRight = false;
-		}
-	}
-
-	private void updateNormalFishMovement() {
-		Vector2 fishPosition = new Vector2(transform.position.x, transform.position.y);
-		Vector2 target = new Vector2(transform.position.x + 100f, transform.position.y);
-		if(!isFacingRight) {
-			target.x = transform.position.x -100f;
-		}
-		fishPosition = Vector2.MoveTowards(fishPosition, target, Mathf.Abs(speed * Time.deltaTime));
-
-		transform.position = new Vector3(fishPosition.x, fishPosition.y, this.transform.position.z);
-	}
-
 	private void updateMoveToTarget(Vector2 target, bool ignoreAwarenessRadius) {
-		if (ignoreAwarenessRadius || Vector2.Distance(target, getMouthPosition()) < awarenessRadius) {
-			Vector2 fishMouthPosition = getMouthPosition();
-			Vector2 newFishMouthPosition = Vector2.MoveTowards(fishMouthPosition, target, Mathf.Abs(speed * Time.deltaTime));
+		if(!isTurning) {
+			if (ignoreAwarenessRadius || Vector2.Distance(target, getMouthPosition()) < awarenessRadius) {
+				Vector2 fishMouthPosition = getMouthPosition();
+				Vector2 newFishMouthPosition = Vector2.MoveTowards(fishMouthPosition, target, Mathf.Abs(speed * Time.deltaTime));
 
-			Vector2 movement = newFishMouthPosition - fishMouthPosition;
+				Vector2 movement = newFishMouthPosition - fishMouthPosition;
 
-			transform.position = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
-		} else {
-			updateMovement(secondaryMovementType);
+				transform.position = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
+			} else {
+				updateMovement(secondaryMovementType);
+			}
 		}
 	}
 
 	private void updateDirectionToTarget(Vector2 target, bool ignoreAwarenessRadius) { 
-		Vector2 fishMouthPosition = getMouthPosition();
-		if (ignoreAwarenessRadius || Vector2.Distance(target, getMouthPosition()) < awarenessRadius) {
-			if(!isFacingRight && fishMouthPosition.x + (Mathf.Abs(fishMouthPosition.x - transform.position.x) / 2) < target.x && (lastRotation + 1f) < Time.time) {
-				isFacingRight = true;
-				lastRotation = Time.time;
-			} else if(isFacingRight && fishMouthPosition.x - (Mathf.Abs(fishMouthPosition.x - transform.position.x) / 2) > target.x && (lastRotation + 1f) < Time.time){
-				isFacingRight = false;
-				lastRotation = Time.time;
-			}
-		} 
+		if(!isTurning) {
+			Vector2 fishMouthPosition = getMouthPosition();
+			if (ignoreAwarenessRadius || Vector2.Distance(target, getMouthPosition()) < awarenessRadius) {
+				if(!isFacingRight && fishMouthPosition.x + (Mathf.Abs(fishMouthPosition.x - transform.position.x) / 2) < target.x && (lastRotation + 1f) < Time.time) {
+					turnFish();
+					lastRotation = Time.time;
+				} else if(isFacingRight && fishMouthPosition.x - (Mathf.Abs(fishMouthPosition.x - transform.position.x) / 2) > target.x && (lastRotation + 1f) < Time.time){
+					turnFish ();
+					lastRotation = Time.time;
+				}
+			} 
+		}
 	}
 
 	private void updateRotation() {
-		Quaternion fishRotation = transform.rotation;
-		if(isFacingRight) {
-			fishRotation.y = 180;
+		if(!isTurning) {
+			Vector3 fishRotation = transform.rotation.eulerAngles;
+			if(isFacingRight) {
+				fishRotation.y = 180;
+			} else {
+				fishRotation.y = 0;
+			}
+			transform.rotation.eulerAngles.Set(fishRotation.x, fishRotation.y, fishRotation.z);
 		} else {
-			fishRotation.y = 0;
+			transform.Rotate(0,Time.deltaTime * rotationSpeed,0);
+			Vector3 fishRotation = transform.rotation.eulerAngles;
+			if((isFacingRight && (fishRotation.y % 360) < (Time.deltaTime * rotationSpeed)) || 
+			   (!isFacingRight && Mathf.Abs(fishRotation.y % 360 - 180) < (Time.deltaTime * rotationSpeed))) {
+				isFacingRight = !isFacingRight;
+				isTurning = false;
+				updateRotation();
+			}
 		}
-		transform.rotation = fishRotation; 
 	}
 
 	private Vector2 getMouthPosition() {
@@ -178,6 +206,10 @@ public class EnemyFish : MonoBehaviour {
 			Debug.LogWarning(this.name + " has no Circle Collider attached, which could be the mouth.");
 		}
 		return result;
+	}
+
+	private void turnFish() {
+		isTurning = true;
 	}
 }
 
