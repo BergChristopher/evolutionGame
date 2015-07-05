@@ -60,8 +60,8 @@ Fisch kann springen
 Man braucht neue Faehigkeiten um weiterzukommen
 	 (schneller gegen Stroeme schwimmen)	
 EVO 
-Kameraeinstellungen anpassen (links den Rand) und dass sie nicht zu weit nach unten und oben weggeht wenn man schnell ist 	
-	
+Kameraeinstellungen anpassen (links den Rand) und dass sie nicht zu weit nach unten und oben weggeht wenn man schnell ist(und automatisch anpasen an Bild) 	
+Kleine Fische die wir essen koennen --> staerker werden um Stein zu schubsen	
 	
 	
 	

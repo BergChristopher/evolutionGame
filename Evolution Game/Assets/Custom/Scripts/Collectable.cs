@@ -28,4 +28,4 @@ public class Collectable : MonoBehaviour {
 
 }
 
-public enum CollectableType { REGULAR_PLANT, ENEMY_FISH_EGG };
+public enum CollectableType { REGULAR_PLANT, ENEMY_FISH_EGG, ENEMY_FISH };

@@ -16,6 +16,7 @@ public class EnemyFish : MonoBehaviour {
 	
 	private bool isFacingRight = true;
 	private bool isTurning = false;
+	private bool canBeEatenByPlayer = false;
 
 	//waypoint based movement variables
 	private int currentWaypoint = 0;
@@ -48,6 +49,18 @@ public class EnemyFish : MonoBehaviour {
 		}
 		isFacingRight = Mathf.Abs((this.transform.rotation.eulerAngles.y % 360) - 180) <= 45;  
 		guardedSpot = new Vector2(this.transform.position.x, this.transform.position.y);
+
+		if(FishType.EATABLE_FISH.Equals(this.fishType)) {
+			foreach( Collider2D collider in GetComponents<Collider2D>()) {
+				if(collider.isTrigger == true) {
+					canBeEatenByPlayer = true;
+					break;
+				}
+			}
+			if(!canBeEatenByPlayer) {
+				Debug.LogError("Eatable fish " + name + " has no trigger 2D Collider attached." );
+			}
+		}
 	}
 	
 	// Update is called once per frame
@@ -65,6 +78,18 @@ public class EnemyFish : MonoBehaviour {
 					GameStatistics.addDeathByFish(this.fishType);
 					fish.die();
 				}
+			}
+		}
+		if(name == "hering") {
+			Debug.Log (name + "eat fish" + canBeEatenByPlayer);
+		}
+		//be eaten by player
+		if (canBeEatenByPlayer && enteringCollider.gameObject.tag == "Player" && enteringCollider.GetType().Equals(typeof(CircleCollider2D))) {
+			FishController fish = enteringCollider.GetComponent<FishController>();
+			if(fish != null && fish.getIsReadyToEat()) {
+				GameStatistics.addCollectable(CollectableType.ENEMY_FISH);
+				fish.evolve();
+				Destroy(this.gameObject);
 			}
 		}
 
@@ -92,6 +117,16 @@ public class EnemyFish : MonoBehaviour {
 				} else {
 					updateMoveToTarget (new Vector2 (player.transform.position.x, player.transform.position.y), false);
 					updateDirectionToTarget (new Vector2 (player.transform.position.x, player.transform.position.y), false);
+				}
+			}
+			else if (currentMovementType.Equals (MovementType.FLEE_FROM_PLAYER)) {
+				if(player == null) {
+					Debug.LogWarning("No player attached to " + name );
+				} else {
+					float newXTargetPosition = transform.position.x + (transform.position.x - player.transform.position.x);
+					float newYTargetPosition = transform.position.y + (transform.position.y - player.transform.position.y);
+					updateMoveToTarget (new Vector2 (newXTargetPosition, newYTargetPosition), false);
+					updateDirectionToTarget (new Vector2 (newXTargetPosition, newYTargetPosition), false);
 				}
 			}
 			else if (currentMovementType.Equals (MovementType.GUARD_STARTING_SPOT)) {
@@ -213,5 +248,5 @@ public class EnemyFish : MonoBehaviour {
 	}
 }
 
-public enum FishType { TEETH_FISH, NEUTRAL_FISH, WHITE_SHARK };
-public enum MovementType { NONE, WAYPOINT_BASED, HORIZONTAL, FOLLOW_PLAYER, GUARD_STARTING_SPOT  };
+public enum FishType { TEETH_FISH, NEUTRAL_FISH, WHITE_SHARK, EATABLE_FISH };
+public enum MovementType { NONE, WAYPOINT_BASED, HORIZONTAL, FOLLOW_PLAYER, GUARD_STARTING_SPOT, FLEE_FROM_PLAYER  };
