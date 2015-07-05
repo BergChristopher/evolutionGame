@@ -61,6 +61,12 @@ public class EnemyFish : MonoBehaviour {
 				Debug.LogError("Eatable fish " + name + " has no trigger 2D Collider attached." );
 			}
 		}
+
+		if(GetComponents<CircleCollider2D>().Length > 1) {
+			Debug.LogWarning(this.name + " has more than one Circle Collider attached, which could be the mouth.");
+		} else if(GetComponent<CircleCollider2D>() == null) {
+			Debug.LogWarning(this.name + " has no Circle Collider attached, which could be the mouth.");
+		} 
 	}
 	
 	// Update is called once per frame
@@ -80,9 +86,7 @@ public class EnemyFish : MonoBehaviour {
 				}
 			}
 		}
-		if(name == "hering") {
-			Debug.Log (name + "eat fish" + canBeEatenByPlayer);
-		}
+
 		//be eaten by player
 		if (canBeEatenByPlayer && enteringCollider.gameObject.tag == "Player" && enteringCollider.GetType().Equals(typeof(CircleCollider2D))) {
 			FishController fish = enteringCollider.GetComponent<FishController>();
@@ -95,7 +99,6 @@ public class EnemyFish : MonoBehaviour {
 
 		//change direction on touching ground
 		if(enteringCollider.gameObject.tag == "Environment" && (lastCollission + 1f) < Time.time ) {
-			Debug.Log (name + " collided");
 			turnFish();
 			lastCollission = Time.time;
 		}
@@ -180,9 +183,9 @@ public class EnemyFish : MonoBehaviour {
 		if(!isTurning) {
 			if (ignoreAwarenessRadius || Vector2.Distance(target, getMouthPosition()) < awarenessRadius) {
 				Vector2 fishMouthPosition = getMouthPosition();
-				Vector2 newFishMouthPosition = Vector2.MoveTowards(fishMouthPosition, target, Mathf.Abs(speed * Time.deltaTime));
 
-				Vector2 movement = newFishMouthPosition - fishMouthPosition;
+				float frameSpeed = Mathf.Abs(speed * Time.deltaTime);
+				Vector2 movement = getMovementFromSourceToTargetWithSpeed(fishMouthPosition, target, frameSpeed);
 
 				transform.position = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
 			} else {
@@ -229,18 +232,22 @@ public class EnemyFish : MonoBehaviour {
 
 	private Vector2 getMouthPosition() {
 		Vector2 result = new Vector2 (this.transform.position.x, this.transform.position.y);
-		if(GetComponents<CircleCollider2D>().Length > 1) {
-			Debug.LogWarning(this.name + " has more than one Circle Collider attached, which could be the mouth.");
-		} else if(GetComponent<CircleCollider2D>() != null) {
+		if(GetComponent<CircleCollider2D>() != null) {
 			Vector2 offset = new Vector2(this.transform.localScale.x * GetComponent<CircleCollider2D>().offset.x, this.transform.localScale.y * GetComponent<CircleCollider2D>().offset.y);
 			if(isFacingRight) {
 				offset.x *= -1;
 			}
 			result += offset;
-		} else {
-			Debug.LogWarning(this.name + " has no Circle Collider attached, which could be the mouth.");
-		}
+		} 
 		return result;
+	}
+
+	private Vector2 getMovementFromSourceToTargetWithSpeed(Vector2 source, Vector2 target, float speed) {
+		Vector2 getVector = target - source;
+		float angleRadians = Mathf.Atan2(getVector.y, getVector.x);
+		Vector2 movement = new Vector2(Mathf.Cos(angleRadians) * speed, Mathf.Sin(angleRadians) * speed); 
+
+		return movement;
 	}
 
 	private void turnFish() {

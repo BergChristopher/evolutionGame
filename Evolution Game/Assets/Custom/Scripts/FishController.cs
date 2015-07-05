@@ -74,7 +74,7 @@ public class FishController : MonoBehaviour {
 			eggs.Remove(currentEgg);
 			Destroy(currentEgg);
 			isFacingRight = true;
-			this.transform.rotation = new Quaternion (this.transform.rotation.x, 180, this.transform.rotation.z, this.transform.rotation.w);
+			transform.eulerAngles = new Vector3 (this.transform.rotation.eulerAngles.x, 180, this.transform.rotation.eulerAngles.z);
 		}
 
 	}
@@ -91,9 +91,9 @@ public class FishController : MonoBehaviour {
 		if ((Input.GetAxis ("Horizontal") < 0 && isFacingRight) || (Input.GetAxis ("Horizontal") > 0 && !isFacingRight)) {
 			isFacingRight = !isFacingRight;
 			if (isFacingRight) {
-				this.transform.rotation = new Quaternion (this.transform.rotation.x, 180, this.transform.rotation.z, this.transform.rotation.w);
+				transform.eulerAngles = new Vector3 (this.transform.rotation.eulerAngles.x, 180, this.transform.rotation.eulerAngles.z);
 			} else {
-				this.transform.rotation = new Quaternion (this.transform.rotation.x, 0, this.transform.rotation.z, this.transform.rotation.w);
+				transform.eulerAngles = new Vector3 (this.transform.rotation.eulerAngles.x, 0, this.transform.rotation.eulerAngles.z);
 			}
 		}
 	}
@@ -106,8 +106,8 @@ public class FishController : MonoBehaviour {
 		velocity.x = previousVelocity.x + (Input.GetAxis ("Horizontal") * swimAcceleration.x * Time.deltaTime * ESTIMATED_FRAMES_PER_SECOND); //v=v0+a*(t-t0)
 		velocity.y = previousVelocity.y + (Input.GetAxis ("Vertical") * swimAcceleration.y * Time.deltaTime * ESTIMATED_FRAMES_PER_SECOND); //v=v0+a*(t-t0)
 		
-		float horizontalDrag = (dragCoefficient.x * (velocity.x * velocity.x)) + (dragCoefficient.x);
-		float verticalDrag = (dragCoefficient.y * (velocity.y * velocity.y)) + (dragCoefficient.y);
+		float horizontalDrag = (1 - Mathf.Abs(Input.GetAxis ("Horizontal"))) * ((dragCoefficient.x * (velocity.x * velocity.x)) + (dragCoefficient.x));
+		float verticalDrag = (1 - Mathf.Abs(Input.GetAxis ("Vertical"))) * ((dragCoefficient.y * (velocity.y * velocity.y)) + (dragCoefficient.y));
 
 		if (velocity.x > horizontalDrag) {
 			velocity.x -= horizontalDrag; //physical drag applied
@@ -127,7 +127,9 @@ public class FishController : MonoBehaviour {
 		
 		velocity.x = Mathf.Clamp (velocity.x, (maximumVelocity.x * -1), maximumVelocity.x); //clamp between max and min velocity
 		velocity.y = Mathf.Clamp (velocity.y, (maximumVelocity.y * -1), maximumVelocity.y); //clamp between max and min velocity
-		
+
+		Debug.Log(velocity);
+
 		this.transform.position = new Vector3(this.transform.position.x + (velocity.x * Time.deltaTime), 
 		                                      Mathf.Clamp((this.transform.position.y + (velocity.y * Time.deltaTime)), float.MinValue, maximumYPosition), 
 		                                      this.transform.position.z);
