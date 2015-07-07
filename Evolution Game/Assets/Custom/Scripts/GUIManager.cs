@@ -88,7 +88,7 @@ public class GUIManager : MonoBehaviour {
 			Dictionary<CollectableType, int> gatheredCollectables = GameStatistics.getGatheredCollectables(); 
 			collectables.text = "";
 			foreach (KeyValuePair<CollectableType, int> pair in gatheredCollectables) {
-				collectables.text += pair.Key.ToString() + ": " + pair.Value.ToString() + "\n";
+				collectables.text += pair.Key.getDescription() + ": " + pair.Value.ToString() + "\n";
 			}
 		}
 	}

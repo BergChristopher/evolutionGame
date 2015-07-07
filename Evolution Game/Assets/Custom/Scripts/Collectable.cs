@@ -5,17 +5,7 @@ public class Collectable : MonoBehaviour {
 		
 	public CollectableType collectableType = CollectableType.REGULAR_PLANT;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-
-	void OnTriggerEnter2D (Collider2D enteringCollider) {
+	void OnTriggerStay2D (Collider2D enteringCollider) {
 		if (enteringCollider.gameObject.tag == "Player" && enteringCollider.GetType().Equals(typeof(CircleCollider2D))) {
 			FishController fish = enteringCollider.GetComponent<FishController>();
 			if(fish != null && fish.getIsReadyToEat()) {
@@ -26,7 +16,20 @@ public class Collectable : MonoBehaviour {
 			}
 		}
 	}
-
 }
 
-public enum CollectableType { REGULAR_PLANT, ENEMY_FISH_EGG, ENEMY_FISH };
+public enum CollectableType { 
+	[Description("regular plant")]
+	REGULAR_PLANT, 
+	[Description("enemy fish egg")]
+	ENEMY_FISH_EGG, 
+	[Description("enemy fish")]
+	ENEMY_FISH 
+};
+
+public static class CollectableTypeExtension {
+	public static string getDescription(this CollectableType collectableType) {
+		Description[] da = (Description[])(collectableType.GetType().GetField(collectableType.ToString())).GetCustomAttributes(typeof(Description), false);
+		return da.Length > 0 ? da[0].Value : collectableType.ToString();
+	}
+}

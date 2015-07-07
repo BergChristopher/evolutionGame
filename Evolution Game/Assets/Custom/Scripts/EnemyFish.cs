@@ -67,15 +67,15 @@ public class EnemyFish : MonoBehaviour {
 		} else if(GetComponent<CircleCollider2D>() == null) {
 			Debug.LogWarning(this.name + " has no Circle Collider attached, which could be the mouth.");
 		} 
+
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		updateMovement(movementType);
-		
 	}
 
-	void OnTriggerEnter2D(Collider2D enteringCollider) {
+	void OnTriggerStay2D(Collider2D enteringCollider) {
 		//eat player
 		if(fishType.Equals(FishType.TEETH_FISH) || fishType.Equals(FishType.WHITE_SHARK)) {
 			if (enteringCollider.gameObject.tag == "Player") {
@@ -98,13 +98,19 @@ public class EnemyFish : MonoBehaviour {
 			}
 		}
 
-		//change direction on touching ground
-		if(enteringCollider.gameObject.tag == "Environment" && (lastCollission + 1f) < Time.time ) {
-			turnFish();
-			lastCollission = Time.time;
-		}
 	}
 
+	void OnCollisionEnter2D(Collision2D collision) {
+		foreach (ContactPoint2D contact in collision.contacts) {
+			//change direction on touching ground
+			if(contact.collider.gameObject.tag == "Environment" && (lastCollission + 1f) < Time.time && contact.otherCollider.GetType().Equals(typeof(EdgeCollider2D)) ) {
+				turnFish();
+				lastCollission = Time.time;
+			}
+		}
+		
+	}
+	
 	void updateMovement(MovementType currentMovementType)
 	{
 		if (isMoving) {
@@ -137,6 +143,7 @@ public class EnemyFish : MonoBehaviour {
 				updateMoveToTarget (guardedSpot, true);
 				updateDirectionToTarget (guardedSpot, true);
 			}
+			limitPosition();
 			updateRotation ();
 		}
 	}
@@ -249,6 +256,10 @@ public class EnemyFish : MonoBehaviour {
 		Vector2 movement = new Vector2(Mathf.Cos(angleRadians) * speed, Mathf.Sin(angleRadians) * speed); 
 
 		return movement;
+	}
+
+	private void limitPosition () {
+		transform.position = new Vector3(transform.position.x, Mathf.Clamp(transform.position.y, float.MinValue, LevelSettings.instance.airToWaterTransitionHeight), transform.position.z);
 	}
 
 	private void turnFish() {

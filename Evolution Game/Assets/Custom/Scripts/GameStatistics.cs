@@ -45,14 +45,6 @@ public static class GameStatistics {
 		GUIManager.instance.updateLivesText();
 	}
 
-	public static int getEatenRegularPlants() {
-		int result = 0;
-		if(gatheredCollectablesByType.ContainsKey(CollectableType.REGULAR_PLANT)) {
-			result = gatheredCollectablesByType[CollectableType.REGULAR_PLANT];
-		}
-		return result;
-	}
-
 	public static int getLives() {
 		return lives;
 	}
@@ -71,5 +63,13 @@ public static class GameStatistics {
 
 	public static Dictionary<CollectableType, int> getGatheredCollectables() {
 		return gatheredCollectablesByType;
+	}
+
+	public static int getGatheredCollectablesOfType(CollectableType collectableType) {
+		int result = 0;
+		if(gatheredCollectablesByType.ContainsKey(collectableType)) {
+			result = gatheredCollectablesByType[collectableType];
+		}
+		return result;
 	}
 }
