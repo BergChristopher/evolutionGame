@@ -82,6 +82,7 @@ public class EnemyFish : MonoBehaviour {
 				FishController fish = enteringCollider.GetComponent<FishController>();
 				if(fish != null) {
 					GameStatistics.addDeathByFish(this.fishType);
+					GetComponent<AudioSource>().Play();
 					fish.die();
 				}
 			}

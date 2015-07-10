@@ -21,6 +21,7 @@ public class Collectable : MonoBehaviour {
 			if(fish != null && fish.getIsReadyToEat()) {
 				GameStatistics.addCollectable(this.collectableType);
 				fish.evolve();
+				fish.GetComponent<AudioSource>().Play();
 				Destroy(this.gameObject);
 			}
 		}
