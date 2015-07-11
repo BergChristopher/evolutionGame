@@ -49,6 +49,10 @@ public class FishController : MonoBehaviour {
 			Debug.LogWarning("No SpriteRenderer attached to FishController on " + this.name);
 		}
 
+		if(GetComponent<SpriteRenderer>() == null) {
+			Debug.LogWarning("No AudioSource for eat sound attached to FishController on " + this.name);
+		}
+
 		originalMaximumVelocity = new Vector2(maximumVelocity.x, maximumVelocity.y);
 		originalSwimAcceleration = new Vector2(swimAcceleration.x, swimAcceleration.y);
 	}
