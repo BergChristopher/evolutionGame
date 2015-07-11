@@ -205,7 +205,7 @@ public class EnemyFish : MonoBehaviour {
 	private void updateDirectionToTarget(Vector2 target, bool ignoreAwarenessRadius) { 
 		if(!isTurning) {
 			Vector2 fishMouthPosition = getMouthPosition();
-			if ((Mathf.Abs(target.y - fishMouthPosition.y) < Mathf.Abs(target.x - fishMouthPosition.x)) && (ignoreAwarenessRadius || Vector2.Distance(target, fishMouthPosition) < awarenessRadius)) {
+			if (ignoreAwarenessRadius || Vector2.Distance(target, getMouthPosition()) < awarenessRadius) {
 				if(!isFacingRight && fishMouthPosition.x + (Mathf.Abs(fishMouthPosition.x - transform.position.x) / 2) < target.x && (lastRotation + 1f) < Time.time) {
 					turnFish();
 					lastRotation = Time.time;
