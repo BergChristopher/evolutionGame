@@ -94,6 +94,7 @@ public class EnemyFish : MonoBehaviour {
 			if(fish != null && fish.getIsReadyToEat()) {
 				GameStatistics.addCollectable(CollectableType.ENEMY_FISH);
 				fish.evolve();
+				fish.GetComponent<AudioSource>().Play();
 				Destroy(this.gameObject);
 			}
 		}
