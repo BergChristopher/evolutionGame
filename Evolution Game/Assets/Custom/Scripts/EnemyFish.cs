@@ -140,7 +140,7 @@ public class EnemyFish : MonoBehaviour {
 				}
 			}
 			else if (currentMovementType.Equals (MovementType.GUARD_STARTING_SPOT)) {
-				updateMoveToTarget (guardedSpot, true);
+				updateMoveToTarget (guardedSpot, true, false);
 				updateDirectionToTarget (guardedSpot, true);
 			}
 			limitPosition();
@@ -187,14 +187,17 @@ public class EnemyFish : MonoBehaviour {
 		}
 	}
 
-	private void updateMoveToTarget(Vector2 target, bool ignoreAwarenessRadius) {
+	private void updateMoveToTarget(Vector2 target, bool ignoreAwarenessRadius, bool overShootMovement = true) {
 		if(!isTurning) {
-			if (ignoreAwarenessRadius || Vector2.Distance(target, getMouthPosition()) < awarenessRadius) {
-				Vector2 fishMouthPosition = getMouthPosition();
-
+			Vector2 mouthPosition = getMouthPosition();
+			if (ignoreAwarenessRadius || Vector2.Distance(target, mouthPosition) < awarenessRadius) {
 				float frameSpeed = Mathf.Abs(speed * Time.deltaTime);
-				Vector2 movement = getMovementFromSourceToTargetWithSpeed(fishMouthPosition, target, frameSpeed);
-
+				Vector2 movement = Vector2.zero;
+				if(!overShootMovement && Vector2.Distance (target, mouthPosition) <= frameSpeed) {
+					movement = target - mouthPosition;
+				} else {
+					movement = getMovementFromSourceToTargetWithSpeed(mouthPosition, target, frameSpeed);
+				}
 				transform.position = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
 			} else {
 				updateMovement(secondaryMovementType);
