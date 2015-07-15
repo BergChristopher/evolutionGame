@@ -14,7 +14,7 @@ public class CameraFollowsObject : MonoBehaviour {
 	public float minimumCameraYPosition = -11.5f;
 	public float maximumCameraXPosition = 76.5f;
 	public float minimumCameraXPosition = -76.5f;
-
+	public Vector2 maximumDistanceFromTarget = new Vector2(15f, 8.5f);  
 
 	private bool followHorizontal = false;
 	private bool followVertical = false;
@@ -36,8 +36,10 @@ public class CameraFollowsObject : MonoBehaviour {
 			float targetY = target.transform.position.y;
 
 			if(target.GetComponent<FishController>()) {
-				targetX += (target.GetComponent<FishController>().getVelocity().x * speedChangeFactor.x);
-				targetY += (target.GetComponent<FishController>().getVelocity().y * speedChangeFactor.y);
+				Vector2 estimatedPosition = new Vector2(target.GetComponent<FishController>().getVelocity().x * speedChangeFactor.x,
+				                                        target.GetComponent<FishController>().getVelocity().y * speedChangeFactor.y);
+				targetX += Mathf.Clamp (estimatedPosition.x, -maximumDistanceFromTarget.x, maximumDistanceFromTarget.x);
+				targetY += Mathf.Clamp (estimatedPosition.y, -maximumDistanceFromTarget.y, maximumDistanceFromTarget.y);
 			}
 
 			if (followHorizontalMovement && (Mathf.Abs (targetX - this.transform.position.x) > cameraDeadZone.x)) {
@@ -50,6 +52,7 @@ public class CameraFollowsObject : MonoBehaviour {
 			if (followHorizontal) {
 				newPosition.x = Mathf.SmoothDamp (newPosition.x, targetX, ref cameraVelocity.x, cameraSmoothTime.x);
 				newPosition.x = Mathf.Clamp (newPosition.x, minimumCameraXPosition, maximumCameraXPosition);
+				newPosition.x = Mathf.Clamp (newPosition.x, targetX - maximumDistanceFromTarget.x, targetX + maximumDistanceFromTarget.x);
 				if (Mathf.Abs (newPosition.x - targetX) <= cameraFollowAccuracy.x) {
 					followHorizontal = false;
 				}
