@@ -10,8 +10,6 @@ public class EnemyFish : MonoBehaviour {
 	public bool isMoving = true;
 	public float speed = 3;
 	public float rotationSpeed = 50;
-	public List<Transform> waypoints = new List<Transform>(); 
-
 	public float awarenessRadius = 15f; 
 	
 	private bool isFacingRight = true;
@@ -19,6 +17,7 @@ public class EnemyFish : MonoBehaviour {
 	private bool canBeEatenByPlayer = false;
 
 	//waypoint based movement variables
+	public List<Transform> waypoints = new List<Transform>(); 
 	private int currentWaypoint = 0;
 
 	//horizontal movement variables 
@@ -30,6 +29,11 @@ public class EnemyFish : MonoBehaviour {
 
 	//guard starting spot variables
 	private Vector2 guardedSpot = Vector2.zero;
+
+	//random movement variables
+	public Vector2 timeToChangeRandomMovement = new Vector2(5f, 2f); //in s
+	private Vector2 lastDirectionChange = Vector2.zero;
+	private Vector2 currentDirection = Vector2.zero;
 
 
 	// Use this for initialization
@@ -87,7 +91,6 @@ public class EnemyFish : MonoBehaviour {
 				}
 			}
 		}
-
 		//be eaten by player
 		if (canBeEatenByPlayer && enteringCollider.gameObject.tag == "Player" && enteringCollider.GetType().Equals(typeof(CircleCollider2D))) {
 			FishController fish = enteringCollider.GetComponent<FishController>();
@@ -98,7 +101,6 @@ public class EnemyFish : MonoBehaviour {
 				Destroy(this.gameObject);
 			}
 		}
-
 	}
 
 	void OnCollisionEnter2D(Collision2D collision) {
@@ -109,7 +111,6 @@ public class EnemyFish : MonoBehaviour {
 				lastCollission = Time.time;
 			}
 		}
-		
 	}
 	
 	void updateMovement(MovementType currentMovementType)
@@ -117,7 +118,6 @@ public class EnemyFish : MonoBehaviour {
 		if (isMoving) {
 			if (currentMovementType.Equals (MovementType.WAYPOINT_BASED)) {
 				updateWaypointBasedFishMovement ();
-				updateWaypointBasedDirection ();
 			}
 			else if (currentMovementType.Equals (MovementType.HORIZONTAL)) {
 				updateNormalFishMovement ();
@@ -127,7 +127,6 @@ public class EnemyFish : MonoBehaviour {
 					Debug.LogWarning("No player attached to " + name );
 				} else {
 					updateMoveToTarget (new Vector2 (player.transform.position.x, player.transform.position.y), false);
-					updateDirectionToTarget (new Vector2 (player.transform.position.x, player.transform.position.y), false);
 				}
 			}
 			else if (currentMovementType.Equals (MovementType.FLEE_FROM_PLAYER)) {
@@ -137,12 +136,13 @@ public class EnemyFish : MonoBehaviour {
 					float newXTargetPosition = transform.position.x + (transform.position.x - player.transform.position.x);
 					float newYTargetPosition = transform.position.y + (transform.position.y - player.transform.position.y);
 					updateMoveToTarget (new Vector2 (newXTargetPosition, newYTargetPosition), false);
-					updateDirectionToTarget (new Vector2 (newXTargetPosition, newYTargetPosition), false);
 				}
 			}
 			else if (currentMovementType.Equals (MovementType.GUARD_STARTING_SPOT)) {
 				updateMoveToTarget (guardedSpot, true, false);
-				updateDirectionToTarget (guardedSpot, true);
+			}
+			else if (currentMovementType.Equals (MovementType.RANDOM)) {
+				updateRandomMovement();
 			}
 			limitPosition();
 			updateRotation ();
@@ -162,6 +162,8 @@ public class EnemyFish : MonoBehaviour {
 
 				transform.position = new Vector3(fishPosition.x, fishPosition.y, this.transform.position.z);
 			}
+
+			updateWaypointBasedDirection();
 		}
 	}
 
@@ -199,7 +201,12 @@ public class EnemyFish : MonoBehaviour {
 				} else {
 					movement = getMovementFromSourceToTargetWithSpeed(mouthPosition, target, frameSpeed);
 				}
-				transform.position = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
+
+				if(isFacingRight && movement.x >= 0 || !isFacingRight && movement.x <= 0) {
+					transform.position = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
+				} else {
+					updateDirectionToTarget(target, ignoreAwarenessRadius);
+				}
 			} else {
 				updateMovement(secondaryMovementType);
 			}
@@ -218,6 +225,25 @@ public class EnemyFish : MonoBehaviour {
 					lastRotation = Time.time;
 				}
 			} 
+		}
+	}
+
+	private void updateRandomMovement() {
+		if(Time.time > lastDirectionChange.x + timeToChangeRandomMovement.x) {
+			currentDirection = new Vector2(Random.Range(-speed,speed), currentDirection.y);
+			lastDirectionChange = new Vector2(Time.time, lastDirectionChange.y);
+			float newXTargetPosition = transform.position.x + currentDirection.x;
+			float newYTargetPosition = transform.position.y + currentDirection.y;
+			updateDirectionToTarget(new Vector2(newXTargetPosition, newYTargetPosition), true);
+		}
+		if(Time.time > lastDirectionChange.y + timeToChangeRandomMovement.y) {
+			currentDirection = new Vector2(currentDirection.x, Random.Range(-speed,speed));
+			lastDirectionChange = new Vector2(lastDirectionChange.x, Time.time);
+		}
+		if(!isTurning) {
+			Vector2 newPosition = new Vector2(transform.position.x + (currentDirection.x * Time.deltaTime), 
+		    	                              transform.position.y + (currentDirection.y * Time.deltaTime));
+			transform.position = new Vector3(newPosition.x, newPosition.y, this.transform.position.z);
 		}
 	}
 
@@ -272,4 +298,4 @@ public class EnemyFish : MonoBehaviour {
 }
 
 public enum FishType { TEETH_FISH, NEUTRAL_FISH, WHITE_SHARK, EATABLE_FISH };
-public enum MovementType { NONE, WAYPOINT_BASED, HORIZONTAL, FOLLOW_PLAYER, GUARD_STARTING_SPOT, FLEE_FROM_PLAYER  };
+public enum MovementType { NONE, WAYPOINT_BASED, HORIZONTAL, FOLLOW_PLAYER, GUARD_STARTING_SPOT, FLEE_FROM_PLAYER, RANDOM  };
