@@ -15,6 +15,8 @@ public class EnemyFish : MonoBehaviour {
 	private bool isFacingRight = true;
 	private bool isTurning = false;
 	private bool canBeEatenByPlayer = false;
+	private float currentMaxSpeed;
+	private Vector3 lastPosition; //position in last frame
 
 	//waypoint based movement variables
 	public List<Transform> waypoints = new List<Transform>(); 
@@ -28,6 +30,7 @@ public class EnemyFish : MonoBehaviour {
 	private float lastRotation = 0;
 
 	//guard starting spot variables
+	public float speedMultiplierIfPlayerIsCloserToGuardedSpot = 1f;
 	private Vector2 guardedSpot = Vector2.zero;
 
 	//random movement variables
@@ -35,14 +38,20 @@ public class EnemyFish : MonoBehaviour {
 	private Vector2 lastDirectionChange = Vector2.zero;
 	private Vector2 currentDirection = Vector2.zero;
 
+	//swarm movement
+	public Vector2 separationRadiusAndImpact = new Vector2(2f,10f); //avoid collision
+	public Vector2 alignmentRadiusAndImpact = new Vector2(5f,5f); //align direction
+	public Vector2 cohesionRadiusAndImpact = new Vector2(10f,2f); //attract other fish of same type to join swarm
+	private static Dictionary<FishType, List<EnemyFish>> fishTypeToListOfEnemyFish = new Dictionary<FishType, List<EnemyFish>>(); 
 
-	// Use this for initialization
 	void Start () {
+		currentMaxSpeed = speed;
+		lastPosition = transform.position;
 		if(waypoints.Count < 2 && movementType.Equals(MovementType.WAYPOINT_BASED)) {
 			Debug.LogWarning("Your fish " + name + " has less than 2 waypoints assigned.");
 		}
-		if(speed < 0) {
-			Debug.LogWarning("Your fish " + name + " has a speed less than 0, it will be converted to " + Mathf.Abs(speed) + ".");
+		if(currentMaxSpeed < 0) {
+			Debug.LogWarning("Your fish " + name + " has a speed less than 0, it will be converted to " + Mathf.Abs(currentMaxSpeed) + ".");
 		}
 		player = GameObject.FindGameObjectWithTag("Player");
 		if(player == null || player.GetComponent<FishController>() == null) {
@@ -72,9 +81,9 @@ public class EnemyFish : MonoBehaviour {
 			Debug.LogWarning(this.name + " has no Circle Collider attached, which could be the mouth.");
 		} 
 
+		addMeToDictionary();
 	}
 	
-	// Update is called once per frame
 	void Update () {
 		updateMovement(movementType);
 	}
@@ -116,6 +125,8 @@ public class EnemyFish : MonoBehaviour {
 	void updateMovement(MovementType currentMovementType)
 	{
 		if (isMoving) {
+			lastPosition = transform.position;
+			determineNewSpeed();
 			if (currentMovementType.Equals (MovementType.WAYPOINT_BASED)) {
 				updateWaypointBasedFishMovement ();
 			}
@@ -144,6 +155,9 @@ public class EnemyFish : MonoBehaviour {
 			else if (currentMovementType.Equals (MovementType.RANDOM)) {
 				updateRandomMovement();
 			}
+			else if (currentMovementType.Equals (MovementType.SWARM)) {
+				updateSwarmMovement();
+			}
 			limitPosition();
 			updateRotation ();
 		}
@@ -154,7 +168,7 @@ public class EnemyFish : MonoBehaviour {
 			if (waypoints.Count >= 2) {
 				Vector2 fishPosition = new Vector2(transform.position.x, transform.position.y);
 				Vector2 target = new Vector2(waypoints[currentWaypoint].position.x, waypoints[currentWaypoint].position.y);
-				fishPosition = Vector2.MoveTowards(fishPosition, target, Mathf.Abs(speed * Time.deltaTime));
+				fishPosition = Vector2.MoveTowards(fishPosition, target, Mathf.Abs(currentMaxSpeed * Time.deltaTime));
 
 				if(fishPosition.x == target.x && fishPosition.y == target.y) {
 					currentWaypoint = (currentWaypoint + 1) % waypoints.Count;
@@ -184,7 +198,7 @@ public class EnemyFish : MonoBehaviour {
 			if(!isFacingRight) {
 				target.x = transform.position.x -100f;
 			}
-			fishPosition = Vector2.MoveTowards(fishPosition, target, Mathf.Abs(speed * Time.deltaTime));
+			fishPosition = Vector2.MoveTowards(fishPosition, target, Mathf.Abs(currentMaxSpeed * Time.deltaTime));
 
 			transform.position = new Vector3(fishPosition.x, fishPosition.y, this.transform.position.z);
 		}
@@ -194,7 +208,7 @@ public class EnemyFish : MonoBehaviour {
 		if(!isTurning) {
 			Vector2 mouthPosition = getMouthPosition();
 			if (ignoreAwarenessRadius || Vector2.Distance(target, mouthPosition) < awarenessRadius) {
-				float frameSpeed = Mathf.Abs(speed * Time.deltaTime);
+				float frameSpeed = Mathf.Abs(currentMaxSpeed * Time.deltaTime);
 				Vector2 movement = Vector2.zero;
 				if(!overShootMovement && Vector2.Distance (target, mouthPosition) <= frameSpeed) {
 					movement = target - mouthPosition;
@@ -230,20 +244,37 @@ public class EnemyFish : MonoBehaviour {
 
 	private void updateRandomMovement() {
 		if(Time.time > lastDirectionChange.x + timeToChangeRandomMovement.x) {
-			currentDirection = new Vector2(Random.Range(-speed,speed), currentDirection.y);
+			currentDirection = new Vector2(Random.Range(-currentMaxSpeed,currentMaxSpeed), currentDirection.y);
 			lastDirectionChange = new Vector2(Time.time, lastDirectionChange.y);
 			float newXTargetPosition = transform.position.x + currentDirection.x;
 			float newYTargetPosition = transform.position.y + currentDirection.y;
 			updateDirectionToTarget(new Vector2(newXTargetPosition, newYTargetPosition), true);
 		}
 		if(Time.time > lastDirectionChange.y + timeToChangeRandomMovement.y) {
-			currentDirection = new Vector2(currentDirection.x, Random.Range(-speed,speed));
+			currentDirection = new Vector2(currentDirection.x, Random.Range(-currentMaxSpeed,currentMaxSpeed));
 			lastDirectionChange = new Vector2(lastDirectionChange.x, Time.time);
 		}
 		if(!isTurning) {
 			Vector2 newPosition = new Vector2(transform.position.x + (currentDirection.x * Time.deltaTime), 
 		    	                              transform.position.y + (currentDirection.y * Time.deltaTime));
 			transform.position = new Vector3(newPosition.x, newPosition.y, this.transform.position.z);
+		}
+	}
+
+	private void updateSwarmMovement() {
+		if(!isTurning) {
+			Vector2 separation = getSwarmSeparation();
+			Vector2 alignment = getSwarmAlignment();
+			Vector2 cohesion = getSwarmCohesion();
+
+			Vector2 movement = (separation + alignment + cohesion).normalized * speed * Time.deltaTime;
+			Vector3 desiredPosition = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
+
+			if(isFacingRight && movement.x >= 0 || !isFacingRight && movement.x <= 0) {
+				transform.position = desiredPosition;
+			} else {
+				updateDirectionToTarget(new Vector2(desiredPosition.x, desiredPosition.y), true);
+			}
 		}
 	}
 
@@ -281,11 +312,17 @@ public class EnemyFish : MonoBehaviour {
 	}
 
 	private Vector2 getMovementFromSourceToTargetWithSpeed(Vector2 source, Vector2 target, float speed) {
-		Vector2 getVector = target - source;
-		float angleRadians = Mathf.Atan2(getVector.y, getVector.x);
+		float angleRadians = getAngleInRadiansFromAToB(source, target);
 		Vector2 movement = new Vector2(Mathf.Cos(angleRadians) * speed, Mathf.Sin(angleRadians) * speed); 
 
 		return movement;
+	}
+
+	private float getAngleInRadiansFromAToB(Vector2 a, Vector2 b) {
+		Vector2 getVector = b - a;
+		float angleRadians = Mathf.Atan2(getVector.y, getVector.x);
+
+		return angleRadians;
 	}
 
 	private void limitPosition () {
@@ -295,7 +332,97 @@ public class EnemyFish : MonoBehaviour {
 	private void turnFish() {
 		isTurning = true;
 	}
+
+	private void determineNewSpeed () {
+		//increase speed if player is closer to guarding spot than the follower
+		if(movementType.Equals(MovementType.FOLLOW_PLAYER) && secondaryMovementType.Equals(MovementType.GUARD_STARTING_SPOT)) {
+			Vector2 playerPos = new Vector2(player.transform.position.x, player.transform.position.y);
+			Vector2 mouthPos = getMouthPosition();
+			bool isPlayerCloserToSpot = Mathf.Abs(Vector2.Distance(playerPos, guardedSpot)) < Mathf.Abs(Vector2.Distance(mouthPos, guardedSpot));
+			currentMaxSpeed = speed;
+			if(isPlayerCloserToSpot) {
+				currentMaxSpeed *= speedMultiplierIfPlayerIsCloserToGuardedSpot;
+			}
+		}
+	}
+
+	private void addMeToDictionary() {
+		//assert this object is not yet in the list
+		if(fishTypeToListOfEnemyFish.ContainsKey(fishType)) {
+			foreach (EnemyFish enemyFish in fishTypeToListOfEnemyFish[fishType]) {
+				if(enemyFish.gameObject.Equals(this.gameObject)) {
+					return;
+				}
+			}
+		}
+
+		if(!fishTypeToListOfEnemyFish.ContainsKey(fishType)) {
+			fishTypeToListOfEnemyFish.Add(fishType, new List<EnemyFish>());
+        }
+		fishTypeToListOfEnemyFish[fishType].Add(this);
+	}
+
+	private List<EnemyFish> getSameFishTypeInRadius(float radius) {
+		List<EnemyFish> result = new List<EnemyFish>();
+
+		if(fishTypeToListOfEnemyFish.ContainsKey(fishType)) {
+			foreach (EnemyFish enemyFish in fishTypeToListOfEnemyFish[fishType]) {
+				Vector2 enemyPosition = new Vector2 (enemyFish.transform.position.x, enemyFish.transform.position.y);
+				if(!System.Object.ReferenceEquals(enemyFish, this) && Mathf.Abs(Vector2.Distance(getMouthPosition(), enemyPosition)) <= radius) {
+					result.Add(enemyFish);
+				}
+			}
+		}
+
+		return result;
+	}
+
+	private Vector2 getSwarmSeparation() {
+		Vector2 separation = Vector2.zero;
+		List<EnemyFish> sameFishInRadius = getSameFishTypeInRadius(separationRadiusAndImpact.x);
+
+		foreach(EnemyFish enemyFish in sameFishInRadius) {
+			Vector2 separationForOneFish = getMouthPosition () - new Vector2(enemyFish.transform.position.x, enemyFish.transform.position.y);
+			separation += separationForOneFish.normalized;
+		}
+
+		separation = separation.normalized * separationRadiusAndImpact.y;
+		//Debug.Log ("Separation= " + separation + " for " + name + " with " + sameFishInRadius.Count + " fish in " + separationRadiusAndImpact.x + " distance.");
+		return separation;
+	}
+
+	private Vector2 getSwarmAlignment() {
+		Vector2 alignment = Vector2.zero;
+		List<EnemyFish> sameFishInRadius = getSameFishTypeInRadius(alignmentRadiusAndImpact.x);
+		
+		foreach(EnemyFish enemyFish in sameFishInRadius) {
+			alignment += enemyFish.getPreviousMovement().normalized;
+		}
+		
+		alignment = alignment.normalized * alignmentRadiusAndImpact.y;
+		//Debug.Log ("Alignment= " + alignment + " for " + name + " with " + sameFishInRadius.Count + " fish in " + alignmentRadiusAndImpact.x + " distance.");
+		return alignment;
+	}
+
+	private Vector2 getSwarmCohesion() {
+		Vector2 cohesion = Vector2.zero;
+		List<EnemyFish> sameFishInRadius = getSameFishTypeInRadius(cohesionRadiusAndImpact.x);
+		
+		foreach(EnemyFish enemyFish in sameFishInRadius) {
+			Vector2 cohesionForOneFish = new Vector2(enemyFish.transform.position.x, enemyFish.transform.position.y) - getMouthPosition ();
+			cohesion += cohesionForOneFish.normalized;
+			//Debug.Log(name + " sees " + enemyFish.name + " with movement = " + cohesionForOneFish);
+		}
+		
+		cohesion = cohesion.normalized * cohesionRadiusAndImpact.y;
+		//Debug.Log ("Cohesion= " + cohesion + " for " + name + " with " + sameFishInRadius.Count + " fish in " + cohesionRadiusAndImpact.x + " distance.");
+		return cohesion;
+	}
+
+	public Vector2 getPreviousMovement() {
+		return new Vector2(transform.position.x - lastPosition.x, transform.position.y - lastPosition.y );
+	}
 }
 
 public enum FishType { TEETH_FISH, NEUTRAL_FISH, WHITE_SHARK, EATABLE_FISH };
-public enum MovementType { NONE, WAYPOINT_BASED, HORIZONTAL, FOLLOW_PLAYER, GUARD_STARTING_SPOT, FLEE_FROM_PLAYER, RANDOM  };
+public enum MovementType { NONE, WAYPOINT_BASED, HORIZONTAL, FOLLOW_PLAYER, GUARD_STARTING_SPOT, FLEE_FROM_PLAYER, RANDOM, SWARM };

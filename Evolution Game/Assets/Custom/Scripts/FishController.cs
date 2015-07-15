@@ -91,7 +91,6 @@ public class FishController : MonoBehaviour {
 	}
 
 	public void evolve() {
-		Debug.Log (originalMaximumVelocity + " " + maximumVelocity);
 		if (GameStatistics.getGatheredCollectablesOfType(CollectableType.REGULAR_PLANT) == 6) {
 			spriteRenderer.color = new Color(1f,0.3f,0.3f,1f);
 			isFast = true;
@@ -102,7 +101,6 @@ public class FishController : MonoBehaviour {
 			GetComponent<Rigidbody2D>().mass = 800;
 			recalculateSpeeds();
 		}
-		Debug.Log (originalMaximumVelocity + " " + maximumVelocity);
 	}
 
 	private void updateFacingDirection() {
