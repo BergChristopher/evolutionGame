@@ -11,7 +11,8 @@ public class EnemyFish : MonoBehaviour {
 	public float speed = 3;
 	public float rotationSpeed = 50;
 	public float awarenessRadius = 15f; 
-	
+
+	private Animator animator;
 	private bool isFacingRight = true;
 	private bool isTurning = false;
 	private bool canBeEatenByPlayer = false;
@@ -45,6 +46,7 @@ public class EnemyFish : MonoBehaviour {
 	private static Dictionary<FishType, List<EnemyFish>> fishTypeToListOfEnemyFish = new Dictionary<FishType, List<EnemyFish>>(); 
 
 	void Start () {
+		animator = this.GetComponent<Animator>();
 		currentMaxSpeed = speed;
 		lastPosition = transform.position;
 		if(waypoints.Count < 2 && movementType.Equals(MovementType.WAYPOINT_BASED)) {
@@ -137,6 +139,7 @@ public class EnemyFish : MonoBehaviour {
 				if(player == null) {
 					Debug.LogWarning("No player attached to " + name );
 				} else {
+
 					updateMoveToTarget (new Vector2 (player.transform.position.x, player.transform.position.y), false);
 				}
 			}
@@ -210,6 +213,9 @@ public class EnemyFish : MonoBehaviour {
 			if (ignoreAwarenessRadius || Vector2.Distance(target, mouthPosition) < awarenessRadius) {
 				float frameSpeed = Mathf.Abs(currentMaxSpeed * Time.deltaTime);
 				Vector2 movement = Vector2.zero;
+				if (animator != null) {
+					animator.SetBool("Attacking",true);
+				}
 				if(!overShootMovement && Vector2.Distance (target, mouthPosition) <= frameSpeed) {
 					movement = target - mouthPosition;
 				} else {
@@ -222,6 +228,9 @@ public class EnemyFish : MonoBehaviour {
 					updateDirectionToTarget(target, ignoreAwarenessRadius);
 				}
 			} else {
+				if (animator != null) {
+					animator.SetBool("Attacking",false);
+				}
 				updateMovement(secondaryMovementType);
 			}
 		}
