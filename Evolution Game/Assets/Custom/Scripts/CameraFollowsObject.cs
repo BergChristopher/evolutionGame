@@ -7,7 +7,7 @@ public class CameraFollowsObject : MonoBehaviour {
 	public Vector2 cameraSmoothTime = new Vector2(0.1f,0.1f); //smooth time for x and y direction
 	public Vector2 cameraDeadZone = new Vector2 (3f, 3f); //zone in which the camera wont follow the target yet in x and y direction
 	public Vector2 cameraFollowAccuracy = new Vector2 (0.5f, 0.5f); //the accuracy of the camera following the target in x and y direction
-	public Vector2 speedChangeFactor = new Vector2(0.7f, 1f); //the camera moves in direction of the target movement according to the target speed
+	public Vector2 speedChangeFactor = new Vector2(1f, 1f); //the camera moves in direction of the target movement according to the target speed
 	public bool followHorizontalMovement = true;
 	public bool followVerticalMovement = true;
 	public float maximumCameraYPosition = 11.5f;
@@ -38,8 +38,8 @@ public class CameraFollowsObject : MonoBehaviour {
 			if(target.GetComponent<FishController>()) {
 				Vector2 estimatedPosition = new Vector2(target.GetComponent<FishController>().getVelocity().x * speedChangeFactor.x,
 				                                        target.GetComponent<FishController>().getVelocity().y * speedChangeFactor.y);
-				targetX += Mathf.Clamp (estimatedPosition.x, -maximumDistanceFromTarget.x, maximumDistanceFromTarget.x);
-				targetY += Mathf.Clamp (estimatedPosition.y, -maximumDistanceFromTarget.y, maximumDistanceFromTarget.y);
+				//targetX += Mathf.Clamp (estimatedPosition.x, -maximumDistanceFromTarget.x, maximumDistanceFromTarget.x);
+				//targetY += Mathf.Clamp (estimatedPosition.y, -maximumDistanceFromTarget.y, maximumDistanceFromTarget.y);
 			}
 
 			if (followHorizontalMovement && (Mathf.Abs (targetX - this.transform.position.x) > cameraDeadZone.x)) {
@@ -51,8 +51,8 @@ public class CameraFollowsObject : MonoBehaviour {
 
 			if (followHorizontal) {
 				newPosition.x = Mathf.SmoothDamp (newPosition.x, targetX, ref cameraVelocity.x, cameraSmoothTime.x);
-				newPosition.x = Mathf.Clamp (newPosition.x, minimumCameraXPosition, maximumCameraXPosition);
 				newPosition.x = Mathf.Clamp (newPosition.x, targetX - maximumDistanceFromTarget.x, targetX + maximumDistanceFromTarget.x);
+				newPosition.x = Mathf.Clamp (newPosition.x, minimumCameraXPosition, maximumCameraXPosition);
 				if (Mathf.Abs (newPosition.x - targetX) <= cameraFollowAccuracy.x) {
 					followHorizontal = false;
 				}

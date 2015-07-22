@@ -40,8 +40,8 @@ public class EnemyFish : MonoBehaviour {
 	private Vector2 currentDirection = Vector2.zero;
 
 	//swarm movement
-	public Vector2 separationRadiusAndImpact = new Vector2(2f,10f); //avoid collision
-	public Vector2 alignmentRadiusAndImpact = new Vector2(5f,5f); //align direction
+	public Vector2 separationRadiusAndImpact = new Vector2(3f,10f); //avoid collision
+	public Vector2 alignmentRadiusAndImpact = new Vector2(6f,5f); //align direction
 	public Vector2 cohesionRadiusAndImpact = new Vector2(10f,2f); //attract other fish of same type to join swarm
 	private static Dictionary<FishType, List<EnemyFish>> fishTypeToListOfEnemyFish = new Dictionary<FishType, List<EnemyFish>>(); 
 
@@ -109,6 +109,7 @@ public class EnemyFish : MonoBehaviour {
 				GameStatistics.addCollectable(CollectableType.ENEMY_FISH);
 				fish.evolve();
 				fish.GetComponent<AudioSource>().Play();
+				removeMeFromDictionary();
 				Destroy(this.gameObject);
 			}
 		}
@@ -279,7 +280,9 @@ public class EnemyFish : MonoBehaviour {
 			Vector2 movement = (separation + alignment + cohesion).normalized * speed * Time.deltaTime;
 			Vector3 desiredPosition = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
 
-			if(isFacingRight && movement.x >= 0 || !isFacingRight && movement.x <= 0) {
+			if(movement.magnitude == 0) {
+				updateMovement(secondaryMovementType);
+			} else if(isFacingRight && movement.x >= 0 || !isFacingRight && movement.x <= 0) {
 				transform.position = desiredPosition;
 			} else {
 				updateDirectionToTarget(new Vector2(desiredPosition.x, desiredPosition.y), true);
@@ -369,6 +372,13 @@ public class EnemyFish : MonoBehaviour {
 			fishTypeToListOfEnemyFish.Add(fishType, new List<EnemyFish>());
         }
 		fishTypeToListOfEnemyFish[fishType].Add(this);
+	}
+
+	private void removeMeFromDictionary() {
+		//assert this object is not yet in the list
+		if(fishTypeToListOfEnemyFish.ContainsKey(fishType)) {
+			fishTypeToListOfEnemyFish[fishType].Remove(this);
+		}
 	}
 
 	private List<EnemyFish> getSameFishTypeInRadius(float radius) {
