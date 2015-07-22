@@ -5,6 +5,8 @@ using System.Collections.Generic;
 public class FishController : MonoBehaviour {
 
 	private const int ESTIMATED_FRAMES_PER_SECOND = 60;
+	private const int SPEED_REWARDS_TO_UPGRADE = 6;
+	private const int STRENGTH_REWARDS_TO_UPGRADE = 6;
 
 	public Vector2 swimAcceleration = new Vector2 (4f,2f);
 	public Vector2 dragCoefficient = new Vector2 (0.01f, 0.015f);
@@ -91,12 +93,12 @@ public class FishController : MonoBehaviour {
 	}
 
 	public void evolve() {
-		if (GameStatistics.getGatheredCollectablesOfType(CollectableType.REGULAR_PLANT) == 6) {
+		if (GameStatistics.getGatheredRewardsOfType(RewardType.SPEED) == SPEED_REWARDS_TO_UPGRADE) {
 			spriteRenderer.color = new Color(1f,0.3f,0.3f,1f);
 			isFast = true;
 			recalculateSpeeds();
 		}
-		if(GameStatistics.getGatheredCollectablesOfType(CollectableType.ENEMY_FISH) == 6) {
+		if(GameStatistics.getGatheredRewardsOfType(RewardType.STRENGTH) == STRENGTH_REWARDS_TO_UPGRADE) {
 			isStrong = true;
 			GetComponent<Rigidbody2D>().mass = 800;
 			recalculateSpeeds();

@@ -6,7 +6,8 @@ public class EnemyFish : MonoBehaviour {
 
 	public FishType fishType = FishType.TEETH_FISH;
 	public MovementType movementType = MovementType.HORIZONTAL;
-	public MovementType secondaryMovementType =MovementType.NONE;
+	public MovementType secondaryMovementType = MovementType.NONE;
+	public RewardType rewardType = RewardType.NONE; 
 	public bool isMoving = true;
 	public float speed = 3;
 	public float rotationSpeed = 50;
@@ -107,6 +108,7 @@ public class EnemyFish : MonoBehaviour {
 			FishController fish = enteringCollider.GetComponent<FishController>();
 			if(fish != null && fish.getIsReadyToEat()) {
 				GameStatistics.addCollectable(CollectableType.ENEMY_FISH);
+				GameStatistics.addReward(rewardType);
 				fish.evolve();
 				fish.GetComponent<AudioSource>().Play();
 				removeMeFromDictionary();
@@ -442,6 +444,3 @@ public class EnemyFish : MonoBehaviour {
 		return new Vector2(transform.position.x - lastPosition.x, transform.position.y - lastPosition.y );
 	}
 }
-
-public enum FishType { TEETH_FISH, NEUTRAL_FISH, WHITE_SHARK, EATABLE_FISH };
-public enum MovementType { NONE, WAYPOINT_BASED, HORIZONTAL, FOLLOW_PLAYER, GUARD_STARTING_SPOT, FLEE_FROM_PLAYER, RANDOM, SWARM };

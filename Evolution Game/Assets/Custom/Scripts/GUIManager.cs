@@ -90,6 +90,10 @@ public class GUIManager : MonoBehaviour {
 			foreach (KeyValuePair<CollectableType, int> pair in gatheredCollectables) {
 				collectables.text += pair.Key.getDescription() + ": " + pair.Value.ToString() + "\n";
 			}
+			Dictionary<RewardType, int> gatheredRewards = GameStatistics.getGatheredRewards(); 
+			foreach (KeyValuePair<RewardType, int> pair in gatheredRewards) {
+				collectables.text += pair.Key.getDescription() + ": " + pair.Value.ToString() + "\n";
+			}
 		}
 	}
 
