@@ -2,7 +2,8 @@
 	TEETH_FISH, 
 	NEUTRAL_FISH, 
 	WHITE_SHARK, 
-	EATABLE_FISH 
+	EATABLE_FISH,
+	READY_TO_MATE_FISH
 };
 
 public enum MovementType { 

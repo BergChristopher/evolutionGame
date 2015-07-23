@@ -96,4 +96,12 @@ public static class GameStatistics {
 		}
 		return result;
 	}
+
+	public static void clearRewardsAndCollectables() {
+		gatheredRewards = 0;
+		gatheredCollectables = 0;
+		gatheredCollectablesByType = new Dictionary<CollectableType, int>();
+		gatheredRewardsByType = new Dictionary<RewardType, int>();
+		GUIManager.instance.updateCollectablesText();
+	}
 }

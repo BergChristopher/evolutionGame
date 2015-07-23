@@ -21,6 +21,10 @@ public class EnemyFish : MonoBehaviour {
 	private float currentMaxSpeed;
 	private Vector3 lastPosition; //position in last frame
 
+	//only for FishType that is ready for mating
+	private bool isMating = false;
+	private bool isReadyToLayEgg = false;
+
 	//waypoint based movement variables
 	public List<Transform> waypoints = new List<Transform>(); 
 	private int currentWaypoint = 0;
@@ -86,7 +90,10 @@ public class EnemyFish : MonoBehaviour {
 	}
 	
 	void Update () {
-		updateMovement(movementType);
+		updateMating();
+		if(!isMating) {
+			updateMovement(movementType);
+		}
 	}
 
 	void OnTriggerStay2D(Collider2D enteringCollider) {
@@ -347,7 +354,7 @@ public class EnemyFish : MonoBehaviour {
 
 	private void determineNewSpeed () {
 		//increase speed if player is closer to guarding spot than the follower
-		if(movementType.Equals(MovementType.FOLLOW_PLAYER) && secondaryMovementType.Equals(MovementType.GUARD_STARTING_SPOT)) {
+		if(movementType.Equals(MovementType.FOLLOW_PLAYER) && secondaryMovementType.Equals(MovementType.GUARD_STARTING_SPOT) && player != null) {
 			Vector2 playerPos = new Vector2(player.transform.position.x, player.transform.position.y);
 			Vector2 mouthPos = getMouthPosition();
 			bool isPlayerCloserToSpot = Mathf.Abs(Vector2.Distance(playerPos, guardedSpot)) < Mathf.Abs(Vector2.Distance(mouthPos, guardedSpot));
@@ -440,5 +447,33 @@ public class EnemyFish : MonoBehaviour {
 
 	public Vector2 getPreviousMovement() {
 		return new Vector2(transform.position.x - lastPosition.x, transform.position.y - lastPosition.y );
+	}
+
+	private void updateMating() {
+		if(fishType.Equals(FishType.READY_TO_MATE_FISH)) {
+			Vector2 thisPosition = getMouthPosition();
+			Vector2 playerPosition = new Vector2(player.transform.position.x, player.transform.position.y);
+			FishController fishController = player.GetComponent<FishController>();
+			if(fishController != null && fishController.getIsReadyToMate() && Vector2.Distance(thisPosition, playerPosition) < awarenessRadius) {
+				Debug.Log ("mateable player in distance!!!");
+				if(!isMating && Input.GetKeyDown(KeyCode.Return)) {
+					fishController.mate(this);
+					isMating = true;
+				}
+			}
+		}
+		if(isMating && isReadyToLayEgg) {
+			GameObject fishEgg = (GameObject) Instantiate(Resources.Load("fishEgg"),transform.position, transform.rotation);
+			//is strong is fast need to be added
+			player.GetComponent<FishController>().addEgg(fishEgg);
+			isMating = false;
+			isReadyToLayEgg = false;
+		}
+	}
+
+	public void layEggs() {
+		if(isMating) {
+			isReadyToLayEgg = true;
+		}
 	}
 }
