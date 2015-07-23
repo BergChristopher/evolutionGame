@@ -13,6 +13,7 @@ public class EnemyFish : MonoBehaviour {
 	public float rotationSpeed = 50;
 	public float awarenessRadius = 15f; 
 
+	private GameObject player = null;
 	private Animator animator;
 	private bool isFacingRight = true;
 	private bool isTurning = false;
@@ -28,7 +29,6 @@ public class EnemyFish : MonoBehaviour {
 	private float lastCollission = 0; 
 
 	//follow player based movement 
-	private GameObject player = null;
 	private float lastRotation = 0;
 
 	//guard starting spot variables
@@ -59,9 +59,7 @@ public class EnemyFish : MonoBehaviour {
 		player = GameObject.FindGameObjectWithTag("Player");
 		if(player == null || player.GetComponent<FishController>() == null) {
 			player = null;
-			if(movementType.Equals(MovementType.FOLLOW_PLAYER)) {
-				Debug.LogWarning("Your fish " + name + " cannot find the player.");
-			}
+			Debug.LogWarning("Your fish " + name + " cannot find the player.");
 		}
 		isFacingRight = Mathf.Abs((this.transform.rotation.eulerAngles.y % 360) - 180) <= 45;  
 		guardedSpot = new Vector2(this.transform.position.x, this.transform.position.y);

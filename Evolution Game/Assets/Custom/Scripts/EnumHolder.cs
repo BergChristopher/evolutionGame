@@ -45,3 +45,7 @@ public static class RewardTypeExtension {
 		return da.Length > 0 ? da[0].Value : rewardType.ToString();
 	}
 }
+
+public enum EventType {
+	PLAYER_DEATH
+}

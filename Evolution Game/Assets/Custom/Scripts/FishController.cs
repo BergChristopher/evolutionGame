@@ -78,6 +78,7 @@ public class FishController : MonoBehaviour {
 
 	public void die() {
 		GameStatistics.decrementLives();
+		EventManager.instance.triggerEvent(EventType.PLAYER_DEATH);
 		if(GameStatistics.getLives() < 0) {
 			isAlive = false;
 			Destroy (this.gameObject);
