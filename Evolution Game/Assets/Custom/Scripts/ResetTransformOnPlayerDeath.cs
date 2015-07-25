@@ -16,7 +16,9 @@ public class ResetTransformOnPlayerDeath : MonoBehaviour, IEventReceiver {
 	}
 
 	void OnDestroy() {
-		EventManager.instance.removeReceiver(this);
+		if(EventManager.instance != null) {
+			EventManager.instance.removeReceiver(this);
+		}	
 	}
 
 	public void handleEvent(EventType eventType) {

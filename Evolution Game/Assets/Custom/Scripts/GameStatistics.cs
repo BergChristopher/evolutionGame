@@ -97,6 +97,16 @@ public static class GameStatistics {
 		return result;
 	}
 
+	public static bool decrementGatheredRewardsOfType(RewardType rewardType, int amount) {
+		bool success = false;
+		if(gatheredRewardsByType.ContainsKey(rewardType) && gatheredRewardsByType[rewardType] >= amount ) {
+			gatheredRewardsByType[rewardType] -= amount;
+			success = true;
+		}
+		GUIManager.instance.updateCollectablesText();
+		return success;
+	}
+
 	public static void clearRewardsAndCollectables() {
 		gatheredRewards = 0;
 		gatheredCollectables = 0;

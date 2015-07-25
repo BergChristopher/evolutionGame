@@ -54,19 +54,21 @@ public class EnemyFish : MonoBehaviour {
 		animator = this.GetComponent<Animator>();
 		currentMaxSpeed = speed;
 		lastPosition = transform.position;
+		isFacingRight = Mathf.Abs((this.transform.rotation.eulerAngles.y % 360) - 180) <= 45;  
+		guardedSpot = new Vector2(this.transform.position.x, this.transform.position.y);
+
 		if(waypoints.Count < 2 && movementType.Equals(MovementType.WAYPOINT_BASED)) {
 			Debug.LogWarning("Your fish " + name + " has less than 2 waypoints assigned.");
 		}
 		if(currentMaxSpeed < 0) {
 			Debug.LogWarning("Your fish " + name + " has a speed less than 0, it will be converted to " + Mathf.Abs(currentMaxSpeed) + ".");
 		}
+
 		player = GameObject.FindGameObjectWithTag("Player");
 		if(player == null || player.GetComponent<FishController>() == null) {
 			player = null;
 			Debug.LogWarning("Your fish " + name + " cannot find the player.");
 		}
-		isFacingRight = Mathf.Abs((this.transform.rotation.eulerAngles.y % 360) - 180) <= 45;  
-		guardedSpot = new Vector2(this.transform.position.x, this.transform.position.y);
 
 		if(FishType.EATABLE_FISH.Equals(this.fishType)) {
 			foreach( Collider2D collider in GetComponents<Collider2D>()) {
@@ -80,11 +82,25 @@ public class EnemyFish : MonoBehaviour {
 			}
 		}
 
-		if(GetComponents<CircleCollider2D>().Length > 1) {
+		//check colliders, one circle needed if fish should be able to eat something
+		CircleCollider2D[] circleCollider2D = GetComponents<CircleCollider2D> ();
+		if(circleCollider2D.Length > 1) {
 			Debug.LogWarning(this.name + " has more than one Circle Collider attached, which could be the mouth.");
-		} else if(GetComponent<CircleCollider2D>() == null) {
+		} else if(circleCollider2D == null) {
 			Debug.LogWarning(this.name + " has no Circle Collider attached, which could be the mouth.");
-		} 
+		} else if(circleCollider2D.Length == 1 && !circleCollider2D[0].isTrigger){
+			Debug.LogWarning(this.name + " has one Circle Collider attached, which could be the mouth, but it is not set as trigger.");
+		}
+
+		//fish should have a Rigidbody 2D to interact with other physics
+		if(GetComponent<Rigidbody2D>() == null) {
+			Debug.LogWarning(this.name + " has no Rigidbody2D attached and can therefore not interact with other objects correctly.");
+		}
+
+		//fish should have an edge collider to detect collisions with walls
+		if(GetComponent<EdgeCollider2D>() == null || GetComponent<EdgeCollider2D>().isTrigger) {
+			Debug.LogWarning(this.name + " has no non trigger EdgeCollider2D attached and might therefore not respond to environmental collissions correctly.");
+		}
 
 		addMeToDictionary();
 	}
@@ -450,24 +466,37 @@ public class EnemyFish : MonoBehaviour {
 	}
 
 	private void updateMating() {
-		if(fishType.Equals(FishType.READY_TO_MATE_FISH)) {
-			Vector2 thisPosition = getMouthPosition();
-			Vector2 playerPosition = new Vector2(player.transform.position.x, player.transform.position.y);
-			FishController fishController = player.GetComponent<FishController>();
-			if(fishController != null && fishController.getIsReadyToMate() && Vector2.Distance(thisPosition, playerPosition) < awarenessRadius) {
-				Debug.Log ("mateable player in distance!!!");
-				if(!isMating && Input.GetKeyDown(KeyCode.Return)) {
-					fishController.mate(this);
-					isMating = true;
+		if(player != null) {
+			if(fishType.Equals(FishType.READY_TO_MATE_FISH)) {
+				Vector2 thisPosition = getMouthPosition();
+				Vector2 playerPosition = new Vector2(player.transform.position.x, player.transform.position.y);
+				FishController fishController = player.GetComponent<FishController>();
+				if(fishController != null && fishController.getIsReadyToMate() && Vector2.Distance(thisPosition, playerPosition) < awarenessRadius) {
+					Debug.Log ("mateable player in distance!!!");
+					if(!isMating && Input.GetKeyDown(KeyCode.Return)) {
+						fishController.mate(this);
+						isMating = true;
+					}
 				}
 			}
-		}
-		if(isMating && isReadyToLayEgg) {
-			GameObject fishEgg = (GameObject) Instantiate(Resources.Load("fishEgg"),transform.position, transform.rotation);
-			//is strong is fast need to be added
-			player.GetComponent<FishController>().addEgg(fishEgg);
-			isMating = false;
-			isReadyToLayEgg = false;
+			if(isMating && isReadyToLayEgg) {
+				FishController fishController = player.GetComponent<FishController>();
+				GameObject fishEgg = (GameObject) Instantiate(Resources.Load("fishEgg"), transform.position, transform.rotation);
+				FishEgg fishEggScript = fishEgg.GetComponent<FishEgg>();
+				if(fishEggScript != null) {
+					if(fishController.getIsStrong()) {
+						fishEggScript.spawnsStrongFish = true;
+					}
+					if(fishController.getIsFast()) {
+						fishEggScript.spawnsFastFish = true;
+					}
+					fishController.addEgg (fishEggScript);
+					isMating = false;
+					isReadyToLayEgg = false;
+				} else {
+					Debug.LogError("Prefab fishEgg has no FishEgg script attached");
+				}
+			}
 		}
 	}
 

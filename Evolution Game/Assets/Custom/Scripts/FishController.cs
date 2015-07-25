@@ -30,7 +30,7 @@ public class FishController : MonoBehaviour {
 	private float matingStartTime; 
 	private EnemyFish matingPartner = null;
 	private bool isAlive = true;
-	private List<GameObject> eggs = new List<GameObject>();
+	private List<FishEgg> eggs = new List<FishEgg>();
 	private SpriteRenderer spriteRenderer;
 
 	//evolving states
@@ -46,12 +46,10 @@ public class FishController : MonoBehaviour {
 		if(eggNest == null) {
 			Debug.LogWarning("No eggNest attached to FishController on " + this.name);
 		} else {
-			foreach (Transform child in eggNest.transform)
+			foreach (FishEgg egg in eggNest.GetComponentsInChildren<FishEgg>())
 			{
-				if(child.tag == "Egg") {
 					GameStatistics.incrementLives();
-					eggs.Add(child.gameObject);
-				}
+					eggs.Add(egg);
 			}
 		}
 		if(GetComponent<SpriteRenderer>() != null) {
@@ -96,6 +94,14 @@ public class FishController : MonoBehaviour {
 		return isReadyToMate;
 	}
 
+	public bool getIsStrong() {
+		return isStrong;
+	}
+
+	public bool getIsFast() {
+		return isFast;
+	}
+
 	public Vector2 getVelocity() {
 		return velocity;
 	}
@@ -107,19 +113,15 @@ public class FishController : MonoBehaviour {
 			isAlive = false;
 			Destroy (this.gameObject);
 		} else {
-			GameObject currentEgg = eggs[eggs.Count - 1]; 
+			FishEgg currentEgg = eggs[eggs.Count - 1]; 
 			GameStatistics.clearRewardsAndCollectables();
-			isFast = false;
-			isStrong = false;
-			FishEgg currentEggScript = currentEgg.GetComponent<FishEgg>();
-			if(currentEggScript != null) {
-				isFast = currentEggScript.spawnsFastFish;
-				isStrong = currentEggScript.spawnsStrongFish;
-			}
+			isFast = currentEgg.spawnsFastFish;
+			isStrong = currentEgg.spawnsStrongFish;
+			isReadyToMate = false;
 			evolve();
 			this.transform.position = currentEgg.transform.position;
 			eggs.Remove(currentEgg);
-			Destroy(currentEgg);
+			Destroy(currentEgg.gameObject);
 			isFacingRight = true;
 			transform.eulerAngles = new Vector3 (this.transform.rotation.eulerAngles.x, 180, this.transform.rotation.eulerAngles.z);
 		}
@@ -127,22 +129,21 @@ public class FishController : MonoBehaviour {
 	}
 
 	public void evolve() {
-		if (isFast || GameStatistics.getGatheredRewardsOfType(RewardType.SPEED) >= SPEED_REWARDS_TO_UPGRADE) {
-			spriteRenderer.color = new Color(1f,0.3f,0.3f,1f);
+		if (!isFast && GameStatistics.getGatheredRewardsOfType(RewardType.SPEED) >= SPEED_REWARDS_TO_UPGRADE) {
+			GameStatistics.decrementGatheredRewardsOfType(RewardType.SPEED, SPEED_REWARDS_TO_UPGRADE);
 			isFast = true;
-		} else {
-			spriteRenderer.color = originalRenderColor;
-			isFast = false;
-		}
-		if(isStrong || GameStatistics.getGatheredRewardsOfType(RewardType.STRENGTH) >= STRENGTH_REWARDS_TO_UPGRADE) {
+		} 
+
+		if(!isStrong && GameStatistics.getGatheredRewardsOfType(RewardType.STRENGTH) >= STRENGTH_REWARDS_TO_UPGRADE) {
+			GameStatistics.decrementGatheredRewardsOfType(RewardType.STRENGTH, STRENGTH_REWARDS_TO_UPGRADE);
 			isStrong = true;
-			GetComponent<Rigidbody2D>().mass = 800;
-		} else {
-			GetComponent<Rigidbody2D>().mass = originalMass;
 		}
+			
 		if(GameStatistics.getGatheredRewardsOfType(RewardType.LIBIDO) >= LIBIDO_REWARDS_TO_MATE) {
 			isReadyToMate = true;
 		}
+
+		updateEvolutionState();
 		recalculateSpeeds();
 	}
 
@@ -154,14 +155,27 @@ public class FishController : MonoBehaviour {
 		}
 	}
 
-	public void addEgg(GameObject fishEgg) {
-		FishEgg fishEggScript = fishEgg.GetComponent<FishEgg>();
-		if(fishEggScript != null) {
-			fishEggScript.transform.parent = eggNest.transform;
+	public void addEgg(FishEgg fishEgg) {
+		if(fishEgg != null) {
+			fishEgg.transform.parent = eggNest.transform;
 			GameStatistics.incrementLives();
 			eggs.Add(fishEgg);
 		} else {
-			Debug.LogError("Invalid fishEgg added to " + name);
+			Debug.LogError("Null fishEgg added to " + name);
+		}
+	}
+
+	private void updateEvolutionState() {
+		if(isFast) {
+			spriteRenderer.color = new Color(1f,0.3f,0.3f,1f);
+		} else {
+			spriteRenderer.color = originalRenderColor;
+		}
+
+		if(isStrong) {
+			GetComponent<Rigidbody2D>().mass = 800;
+		} else {
+			GetComponent<Rigidbody2D>().mass = originalMass;
 		}
 	}
 
@@ -245,6 +259,9 @@ public class FishController : MonoBehaviour {
 			transform.eulerAngles = new Vector3(transform.eulerAngles.x, 180 ,transform.eulerAngles.z);
 			matingPartner.layEggs();
 			matingPartner = null;
+			GameStatistics.decrementGatheredRewardsOfType(RewardType.LIBIDO, LIBIDO_REWARDS_TO_MATE);
+			isReadyToMate = false;
+			evolve();
 		}
 	}
 }
