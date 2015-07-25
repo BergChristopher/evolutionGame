@@ -16,10 +16,14 @@ public class LevelSettings : MonoBehaviour {
 	}
 
 	public float airToWaterTransitionHeight = 0.0f;
+	public Transform respawnPoint1 = null;
+	public Transform respawnPoint2 = null;
 
 	// Use this for initialization
 	void Start () {
-	
+		if(respawnPoint1 == null || respawnPoint2 == null) {
+			Debug.LogWarning(name + " is missing reference to respawn points.");
+		}
 	}
 	
 	// Update is called once per frame

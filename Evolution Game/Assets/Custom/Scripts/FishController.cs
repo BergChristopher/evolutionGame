@@ -8,8 +8,7 @@ public class FishController : MonoBehaviour {
 	private const int SPEED_REWARDS_TO_UPGRADE = 6;
 	private const int STRENGTH_REWARDS_TO_UPGRADE = 6;
 	private const int LIBIDO_REWARDS_TO_MATE = 1;
-	private const float MATING_DURATION = 2f;
-
+	private const float MATING_DURATION = 6f;
 
 	public Vector2 swimAcceleration = new Vector2 (4f,2f);
 	public Vector2 dragCoefficient = new Vector2 (0.01f, 0.015f);

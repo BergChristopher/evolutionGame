@@ -35,13 +35,6 @@ public class CameraFollowsObject : MonoBehaviour {
 			float targetX = target.transform.position.x;
 			float targetY = target.transform.position.y;
 
-			if(target.GetComponent<FishController>()) {
-				Vector2 estimatedPosition = new Vector2(target.GetComponent<FishController>().getVelocity().x * speedChangeFactor.x,
-				                                        target.GetComponent<FishController>().getVelocity().y * speedChangeFactor.y);
-				//targetX += Mathf.Clamp (estimatedPosition.x, -maximumDistanceFromTarget.x, maximumDistanceFromTarget.x);
-				//targetY += Mathf.Clamp (estimatedPosition.y, -maximumDistanceFromTarget.y, maximumDistanceFromTarget.y);
-			}
-
 			if (followHorizontalMovement && (Mathf.Abs (targetX - this.transform.position.x) > cameraDeadZone.x)) {
 				followHorizontal = true;
 			}

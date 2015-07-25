@@ -132,8 +132,7 @@ public class EnemyFish : MonoBehaviour {
 				GameStatistics.addReward(rewardType);
 				fish.evolve();
 				fish.GetComponent<AudioSource>().Play();
-				removeMeFromDictionary();
-				Destroy(this.gameObject);
+				handleMyDeath();
 			}
 		}
 	}
@@ -463,6 +462,27 @@ public class EnemyFish : MonoBehaviour {
 
 	public Vector2 getPreviousMovement() {
 		return new Vector2(transform.position.x - lastPosition.x, transform.position.y - lastPosition.y );
+	}
+
+	private void handleMyDeath()
+	{
+		if(RewardType.NONE == rewardType) {
+			removeMeFromDictionary ();
+			Destroy (this.gameObject);
+		} else {
+			respawnMe();
+		}
+	}
+
+	private void respawnMe() {
+		Vector2 respawn1 = new Vector2 (LevelSettings.instance.respawnPoint1.position.x, LevelSettings.instance.respawnPoint1.position.y);
+		Vector2 respawn2 = new Vector2 (LevelSettings.instance.respawnPoint2.position.x, LevelSettings.instance.respawnPoint1.position.y);
+		Vector2 playerPosition = new Vector2(player.transform.position.x, player.transform.position.y);
+		if(Vector2.Distance (playerPosition, respawn1) < Vector2.Distance(playerPosition, respawn2)) {
+			transform.position = new Vector3(respawn2.x, respawn2.y, transform.position.z);
+		} else {
+			transform.position = new Vector3(respawn1.x, respawn1.y, transform.position.z);
+		}
 	}
 
 	private void updateMating() {
