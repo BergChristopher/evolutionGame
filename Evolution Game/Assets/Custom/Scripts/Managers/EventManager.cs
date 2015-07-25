@@ -54,8 +54,10 @@ public class EventManager : MonoBehaviour {
 	}
 
 	public void triggerEvent(EventType eventType) {
-		foreach(IEventReceiver receiver in eventReceivers[eventType]) {
-			receiver.handleEvent(eventType);
+		if(eventReceivers.ContainsKey(eventType)) {
+			foreach(IEventReceiver receiver in eventReceivers[eventType]) {
+				receiver.handleEvent(eventType);
+			}
 		}
 	}
 }

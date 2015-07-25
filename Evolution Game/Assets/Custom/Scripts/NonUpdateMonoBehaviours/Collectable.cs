@@ -6,6 +6,8 @@ public class Collectable : MonoBehaviour, IEventReceiver {
 	public CollectableType collectableType = CollectableType.REGULAR_PLANT;
 	public RewardType rewardType = RewardType.SPEED;
 
+	private bool onTriggerStayWasAlreadyExecutedThisFrame = false;
+
 	void Start() {
 		EventManager.instance.addReceiver(EventType.PLAYER_DEATH, this);
 		if(GetComponent<SpriteRenderer>() == null && GetComponentInChildren<SpriteRenderer>() == null) {
@@ -13,14 +15,25 @@ public class Collectable : MonoBehaviour, IEventReceiver {
 		}
 	}
 
+	void Update() {
+		onTriggerStayWasAlreadyExecutedThisFrame = false;
+	}
+
 	void OnTriggerStay2D (Collider2D enteringCollider) {
-		if (enteringCollider.gameObject.tag == "Player" && enteringCollider.GetType().Equals(typeof(CircleCollider2D))) {
+		if (!onTriggerStayWasAlreadyExecutedThisFrame && 
+		    	enteringCollider.gameObject.tag == "Player" && 
+		    	enteringCollider.GetType().Equals(typeof(CircleCollider2D))) {
 			FishController fish = enteringCollider.GetComponent<FishController>();
 			if(fish != null && fish.getIsReadyToEat()) {
+				onTriggerStayWasAlreadyExecutedThisFrame = true;
 				GameStatistics.addCollectable(this.collectableType);
 				GameStatistics.addReward(this.rewardType);
 				fish.evolve();
 				fish.GetComponent<AudioSource>().Play();
+
+				if(collectableType == CollectableType.ENEMY_FISH_EGG) {
+					EventManager.instance.triggerEvent(EventType.GAME_WON);
+				}
 
 				if(rewardType == RewardType.NONE) {
 					Destroy(this.gameObject);

@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class EnemyFish : MonoBehaviour {
+public class EnemyFish : MonoBehaviour, IEventReceiver {
 
 	public FishType fishType = FishType.TEETH_FISH;
 	public MovementType movementType = MovementType.HORIZONTAL;
@@ -20,6 +20,8 @@ public class EnemyFish : MonoBehaviour {
 	private bool canBeEatenByPlayer = false;
 	private float currentMaxSpeed;
 	private Vector3 lastPosition; //position in last frame
+	private bool isGameActive = true;
+	private bool onTriggerStayWasAlreadyExecutedThisFrame = false;
 
 	//only for FishType that is ready for mating
 	private bool isMating = false;
@@ -103,36 +105,45 @@ public class EnemyFish : MonoBehaviour {
 		}
 
 		addMeToDictionary();
+		EventManager.instance.addReceiver(EventType.GAME_OVER, this);
+		EventManager.instance.addReceiver(EventType.GAME_WON, this);
 	}
 	
 	void Update () {
-		updateMating();
-		if(!isMating) {
-			updateMovement(movementType);
+		if(isGameActive) {
+			onTriggerStayWasAlreadyExecutedThisFrame = false;
+			updateMating();
+			if(!isMating) {
+				updateMovement(movementType);
+			}
 		}
 	}
 
 	void OnTriggerStay2D(Collider2D enteringCollider) {
-		//eat player
-		if(fishType.Equals(FishType.TEETH_FISH) || fishType.Equals(FishType.WHITE_SHARK)) {
-			if (enteringCollider.gameObject.tag == "Player") {
-				FishController fish = enteringCollider.GetComponent<FishController>();
-				if(fish != null) {
-					GameStatistics.addDeathByFish(this.fishType);
-					GetComponent<AudioSource>().Play();
-					fish.die();
+		if(!onTriggerStayWasAlreadyExecutedThisFrame) {
+			//eat player
+			if(fishType.Equals(FishType.TEETH_FISH) || fishType.Equals(FishType.WHITE_SHARK)) {
+				if (enteringCollider.gameObject.tag == "Player") {
+					FishController fish = enteringCollider.GetComponent<FishController>();
+					if(fish != null) {
+						GameStatistics.addDeathByFish(this.fishType);
+						GetComponent<AudioSource>().Play();
+						fish.die();
+						onTriggerStayWasAlreadyExecutedThisFrame = true;
+					}
 				}
 			}
-		}
-		//be eaten by player
-		if (canBeEatenByPlayer && enteringCollider.gameObject.tag == "Player" && enteringCollider.GetType().Equals(typeof(CircleCollider2D))) {
-			FishController fish = enteringCollider.GetComponent<FishController>();
-			if(fish != null && fish.getIsReadyToEat()) {
-				GameStatistics.addCollectable(CollectableType.ENEMY_FISH);
-				GameStatistics.addReward(rewardType);
-				fish.evolve();
-				fish.GetComponent<AudioSource>().Play();
-				handleMyDeath();
+			//be eaten by player
+			if (canBeEatenByPlayer && enteringCollider.gameObject.tag == "Player" && enteringCollider.GetType().Equals(typeof(CircleCollider2D))) {
+				FishController fish = enteringCollider.GetComponent<FishController>();
+				if(fish != null && fish.getIsReadyToEat()) {
+					GameStatistics.addCollectable(CollectableType.ENEMY_FISH);
+					GameStatistics.addReward(rewardType);
+					fish.evolve();
+					fish.GetComponent<AudioSource>().Play();
+					handleMyDeath();
+					onTriggerStayWasAlreadyExecutedThisFrame = true;
+				}
 			}
 		}
 	}
@@ -146,8 +157,20 @@ public class EnemyFish : MonoBehaviour {
 			}
 		}
 	}
+
+	public void handleEvent(EventType eventType) {
+		if(eventType == EventType.GAME_OVER || eventType == EventType.GAME_WON) {
+			isGameActive = false;
+		}
+	}
 	
-	void updateMovement(MovementType currentMovementType)
+	public void layEggs() {
+		if(isMating) {
+			isReadyToLayEgg = true;
+		}
+	}
+
+	private void updateMovement(MovementType currentMovementType)
 	{
 		if (isMoving) {
 			lastPosition = transform.position;
@@ -517,12 +540,6 @@ public class EnemyFish : MonoBehaviour {
 					Debug.LogError("Prefab fishEgg has no FishEgg script attached");
 				}
 			}
-		}
-	}
-
-	public void layEggs() {
-		if(isMating) {
-			isReadyToLayEgg = true;
 		}
 	}
 }

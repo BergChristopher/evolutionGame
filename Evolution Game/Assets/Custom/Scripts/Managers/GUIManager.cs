@@ -3,13 +3,14 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
-public class GUIManager : MonoBehaviour {
+public class GUIManager : MonoBehaviour, IEventReceiver {
 
 	private static GUIManager _instance;
 
 	public Text lives;
 	public Text collectables;
 	public Text deaths;
+	public Text gameOver;
 
 	public static GUIManager instance {
 		get {
@@ -44,6 +45,8 @@ public class GUIManager : MonoBehaviour {
 		if(collectables == null) {
 			Debug.LogError("No Text for collectables attached to " + this.name);
 		}
+		EventManager.instance.addReceiver(EventType.GAME_OVER, this);
+		EventManager.instance.addReceiver(EventType.GAME_WON, this);
 	}
 
 	public void updateLivesText() {
@@ -95,6 +98,22 @@ public class GUIManager : MonoBehaviour {
 				collectables.text += pair.Key.getDescription() + ": " + pair.Value.ToString() + "\n";
 			}
 		}
+	}
+
+	public void handleEvent(EventType eventType) {
+		if(eventType == EventType.GAME_OVER) {
+			gameOver.text = getGameOverText();
+		} else if(eventType == EventType.GAME_WON) {
+			gameOver.text = getGameWonText();
+		}
+	}
+
+	private string getGameOverText() {
+		return "You lost, try again!";
+	}
+
+	private string getGameWonText() {
+		return "You won, great job!";
 	}
 
 }

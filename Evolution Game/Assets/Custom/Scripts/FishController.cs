@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class FishController : MonoBehaviour {
+public class FishController : MonoBehaviour, IEventReceiver {
 
 	private const int ESTIMATED_FRAMES_PER_SECOND = 60;
 	private const int SPEED_REWARDS_TO_UPGRADE = 6;
@@ -31,6 +31,7 @@ public class FishController : MonoBehaviour {
 	private bool isAlive = true;
 	private List<FishEgg> eggs = new List<FishEgg>();
 	private SpriteRenderer spriteRenderer;
+	private bool isGameActive = true;
 
 	//evolving states
 	private bool isStrong = false;
@@ -70,11 +71,14 @@ public class FishController : MonoBehaviour {
 
 		originalMaximumVelocity = new Vector2(maximumVelocity.x, maximumVelocity.y);
 		originalSwimAcceleration = new Vector2(swimAcceleration.x, swimAcceleration.y);
+
+		EventManager.instance.addReceiver(EventType.GAME_OVER, this);
+		EventManager.instance.addReceiver(EventType.GAME_WON, this);
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if (isAlive) {
+		if (isAlive && isGameActive) {
 			if(!isCurrentlyMating) {
 				updateMovement ();
 				updateFacingDirection ();
@@ -110,6 +114,8 @@ public class FishController : MonoBehaviour {
 		EventManager.instance.triggerEvent(EventType.PLAYER_DEATH);
 		if(GameStatistics.getLives() < 0) {
 			isAlive = false;
+			Debug.Log ("trigger game over");
+			EventManager.instance.triggerEvent(EventType.GAME_OVER);
 			Destroy (this.gameObject);
 		} else {
 			FishEgg currentEgg = eggs[eggs.Count - 1]; 
@@ -124,7 +130,6 @@ public class FishController : MonoBehaviour {
 			isFacingRight = true;
 			transform.eulerAngles = new Vector3 (this.transform.rotation.eulerAngles.x, 180, this.transform.rotation.eulerAngles.z);
 		}
-
 	}
 
 	public void evolve() {
@@ -161,6 +166,12 @@ public class FishController : MonoBehaviour {
 			eggs.Add(fishEgg);
 		} else {
 			Debug.LogError("Null fishEgg added to " + name);
+		}
+	}
+
+	public void handleEvent(EventType eventType) {
+		if(eventType == EventType.GAME_OVER || eventType == EventType.GAME_WON) {
+			isGameActive = false;
 		}
 	}
 

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class CameraFollowsObject : MonoBehaviour {
+public class CameraFollowsObject : MonoBehaviour, IEventReceiver {
 
 	public GameObject target;
 	public Vector2 cameraSmoothTime = new Vector2(0.1f,0.1f); //smooth time for x and y direction
@@ -16,6 +16,7 @@ public class CameraFollowsObject : MonoBehaviour {
 	public float minimumCameraXPosition = -76.5f;
 	public Vector2 maximumDistanceFromTarget = new Vector2(15f, 8.5f);  
 
+	private bool isGameActive = true;
 	private bool followHorizontal = false;
 	private bool followVertical = false;
 
@@ -30,7 +31,7 @@ public class CameraFollowsObject : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (target != null) {
+		if (target != null && isGameActive) {
 			Vector3 newPosition = new Vector3 (this.transform.position.x, this.transform.position.y, this.transform.position.z);
 			float targetX = target.transform.position.x;
 			float targetY = target.transform.position.y;
@@ -58,6 +59,12 @@ public class CameraFollowsObject : MonoBehaviour {
 				}
 			}
 			this.transform.position = newPosition;
+		}
+	}
+
+	public void handleEvent(EventType eventType) {
+		if(eventType == EventType.GAME_OVER || eventType == EventType.GAME_WON) {
+			isGameActive = false;
 		}
 	}
 }
