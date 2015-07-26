@@ -19,7 +19,6 @@ public class FishController : MonoBehaviour, IEventReceiver {
 
 	private Vector2 originalSwimAcceleration;
 	private Vector2 originalMaximumVelocity;
-	private Color originalRenderColor;
 	private float originalMass;
 	private Vector2 velocity = Vector2.zero;
 	private bool isFacingRight = true;
@@ -51,12 +50,6 @@ public class FishController : MonoBehaviour, IEventReceiver {
 					GameStatistics.incrementLives();
 					eggs.Add(egg);
 			}
-		}
-		if(GetComponent<SpriteRenderer>() != null) {
-			spriteRenderer = GetComponent<SpriteRenderer>();
-			originalRenderColor = spriteRenderer.color;
-		} else {
-			Debug.LogWarning("No SpriteRenderer attached to FishController on " + this.name);
 		}
 
 		if(GetComponent<AudioSource>() == null) {
@@ -243,8 +236,10 @@ public class FishController : MonoBehaviour, IEventReceiver {
 		}
 		if (isStrong) {
 			animator.SetInteger("EvolveStrong", 1);
+			GetComponent<Rigidbody2D>().mass = 800;
 		} else {
 			animator.SetInteger("EvolveStrong", 0);
+			GetComponent<Rigidbody2D>().mass = originalMass;
 		}
 
 	}
