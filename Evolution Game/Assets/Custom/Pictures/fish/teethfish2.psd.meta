@@ -1,11 +1,13 @@
 fileFormatVersion: 2
 guid: 01e5ee0c7070a3d439897085ad781e3f
-timeCreated: 1436802535
+timeCreated: 1437915128
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
     21300000: teethfish_mouthClosed
     21300002: teethfish_mouthOpen
+    21300004: teethfish_mouth_closed
+    21300006: teethfish_mouth_open
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -51,25 +53,25 @@ TextureImporter:
   buildTargetSettings: []
   spriteSheet:
     sprites:
-    - name: teethfish_mouthClosed
+    - name: teethfish_mouth_closed
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 294
+        width: 281
         height: 177
-      alignment: 0
-      pivot: {x: .5, y: .5}
+      alignment: 5
+      pivot: {x: 1, y: .5}
       border: {x: 0, y: 0, z: 0, w: 0}
-    - name: teethfish_mouthOpen
+    - name: teethfish_mouth_open
       rect:
         serializedVersion: 2
-        x: 294
+        x: 286
         y: 0
         width: 294
         height: 177
-      alignment: 0
-      pivot: {x: .5, y: .5}
+      alignment: 5
+      pivot: {x: 1, y: .5}
       border: {x: 0, y: 0, z: 0, w: 0}
   spritePackingTag: 
   userData: 
