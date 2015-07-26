@@ -39,6 +39,7 @@ public class FishController : MonoBehaviour, IEventReceiver {
 
 	// Use this for initialization
 	void Start () {
+		Debug.Log ("fish start");
 		animator = this.GetComponent<Animator>();
 		if (animator == null) {
 			Debug.LogWarning("No animator attached to FishController on " + this.name);

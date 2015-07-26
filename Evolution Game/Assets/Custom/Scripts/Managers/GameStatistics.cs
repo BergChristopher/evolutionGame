@@ -110,8 +110,18 @@ public static class GameStatistics {
 	public static void clearRewardsAndCollectables() {
 		gatheredRewards = 0;
 		gatheredCollectables = 0;
-		gatheredCollectablesByType = new Dictionary<CollectableType, int>();
-		gatheredRewardsByType = new Dictionary<RewardType, int>();
+		gatheredCollectablesByType.Clear();
+		gatheredRewardsByType.Clear();
 		GUIManager.instance.updateCollectablesText();
+	}
+
+	public static void clearAll() {
+		Debug.Log("clearing all gamestats");
+		lives = 0;
+		deaths = 0;
+		deathsByFish = 0;
+		deathsByFishType.Clear();
+		
+		clearRewardsAndCollectables();
 	}
 }

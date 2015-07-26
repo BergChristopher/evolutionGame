@@ -50,5 +50,6 @@ public static class RewardTypeExtension {
 public enum EventType {
 	PLAYER_DEATH,
 	GAME_OVER,
-	GAME_WON
+	GAME_WON,
+	GAME_RESTARTED
 }

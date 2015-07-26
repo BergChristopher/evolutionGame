@@ -103,8 +103,8 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 		if(GetComponent<EdgeCollider2D>() == null || GetComponent<EdgeCollider2D>().isTrigger) {
 			Debug.LogWarning(this.name + " has no non trigger EdgeCollider2D attached and might therefore not respond to environmental collissions correctly.");
 		}
-
-		addMeToDictionary();
+		fishTypeToListOfEnemyFish.Clear();
+		addMeToDictionaryOfFish();
 		EventManager.instance.addReceiver(EventType.GAME_OVER, this);
 		EventManager.instance.addReceiver(EventType.GAME_WON, this);
 	}
@@ -403,7 +403,7 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 		}
 	}
 
-	private void addMeToDictionary() {
+	private void addMeToDictionaryOfFish() {
 		//assert this object is not yet in the list
 		if(fishTypeToListOfEnemyFish.ContainsKey(fishType)) {
 			foreach (EnemyFish enemyFish in fishTypeToListOfEnemyFish[fishType]) {

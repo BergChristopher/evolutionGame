@@ -59,6 +59,11 @@ public class EventManager : MonoBehaviour {
 				receiver.handleEvent(eventType);
 			}
 		}
+
+		if(eventType == EventType.GAME_RESTARTED) {
+			GameStatistics.clearAll();
+			eventReceivers.Clear();
+		}
 	}
 }
 

@@ -11,6 +11,7 @@ public class GUIManager : MonoBehaviour, IEventReceiver {
 	public Text collectables;
 	public Text deaths;
 	public Text gameOver;
+	public Button restartButton;
 
 	public static GUIManager instance {
 		get {
@@ -45,6 +46,17 @@ public class GUIManager : MonoBehaviour, IEventReceiver {
 		if(collectables == null) {
 			Debug.LogError("No Text for collectables attached to " + this.name);
 		}
+		if(restartButton == null) {
+			Debug.LogWarning("No Button restartButton attached to " + this.name);
+		} else {
+			setButtonActiveState(restartButton, false);
+		}
+		EventManager.instance.addReceiver(EventType.GAME_OVER, this);
+		EventManager.instance.addReceiver(EventType.GAME_WON, this);
+
+	}
+
+	void OnLevelWasLoaded(int level) {
 		EventManager.instance.addReceiver(EventType.GAME_OVER, this);
 		EventManager.instance.addReceiver(EventType.GAME_WON, this);
 	}
@@ -103,8 +115,20 @@ public class GUIManager : MonoBehaviour, IEventReceiver {
 	public void handleEvent(EventType eventType) {
 		if(eventType == EventType.GAME_OVER) {
 			gameOver.text = getGameOverText();
+			setButtonActiveState(restartButton, true);
 		} else if(eventType == EventType.GAME_WON) {
 			gameOver.text = getGameWonText();
+			setButtonActiveState(restartButton, true);
+		}
+	}
+
+	private void setButtonActiveState(Button button, bool active) {
+		button.gameObject.SetActive(active);
+		if(button.GetComponentInChildren<CanvasRenderer>() != null) {
+			button.GetComponentInChildren<CanvasRenderer>().SetAlpha(active ? 1 : 0);
+		}
+		if(button.GetComponentInChildren<Text>()) {
+			button.GetComponentInChildren<Text>().color = active ? Color.black : Color.clear;
 		}
 	}
 
