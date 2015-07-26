@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class FishController : MonoBehaviour, IEventReceiver {
 
 	private const int ESTIMATED_FRAMES_PER_SECOND = 60;
-	private const int SPEED_REWARDS_TO_UPGRADE = 1;
+	private const int SPEED_REWARDS_TO_UPGRADE = 2;
 	private const int STRENGTH_REWARDS_TO_UPGRADE = 6;
 	private const int LIBIDO_REWARDS_TO_MATE = 1;
 	private const float MATING_DURATION = 6f;
@@ -39,7 +39,6 @@ public class FishController : MonoBehaviour, IEventReceiver {
 
 	// Use this for initialization
 	void Start () {
-		Debug.Log ("fish start");
 		animator = this.GetComponent<Animator>();
 		if (animator == null) {
 			Debug.LogWarning("No animator attached to FishController on " + this.name);
@@ -148,7 +147,6 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			isReadyToMate = true;
 		}
 
-		updateEvolutionState();
 		recalculateSpeeds();
 	}
 
@@ -174,27 +172,6 @@ public class FishController : MonoBehaviour, IEventReceiver {
 		if(eventType == EventType.GAME_OVER || eventType == EventType.GAME_WON) {
 			isGameActive = false;
 		}
-	}
-
-	private void updateEvolutionState() {
-		/*if(isFast) {
-			spriteRenderer.color = new Color(1f,0.3f,0.3f,1f);
-		} else {
-			spriteRenderer.color = originalRenderColor;
-		}*/
-		if (isFast) {
-			animator.SetInteger("EvolveFast",1);
-		}
-		if (isStrong) {
-			animator.SetInteger("EvolveStrong",1);
-		}
-
-
-		/*if(isStrong) {
-			GetComponent<Rigidbody2D>().mass = 800;
-		} else {
-			GetComponent<Rigidbody2D>().mass = originalMass;
-		}*/
 	}
 
 	private void updateFacingDirection() {
@@ -258,6 +235,16 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			animator.SetInteger("Horny", 1); //Action 1 indicates a transition to the horny state
 		} else {
 			animator.SetInteger("Horny", 0); //Action 0 indicates a transition to the not horny state
+		}
+		if (isFast) {
+			animator.SetInteger("EvolveFast", 1);
+		} else {
+			animator.SetInteger("EvolveFast", 0);
+		}
+		if (isStrong) {
+			animator.SetInteger("EvolveStrong", 1);
+		} else {
+			animator.SetInteger("EvolveStrong", 0);
 		}
 
 	}

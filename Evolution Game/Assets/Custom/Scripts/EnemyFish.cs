@@ -66,10 +66,16 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 			Debug.LogWarning("Your fish " + name + " has a speed less than 0, it will be converted to " + Mathf.Abs(currentMaxSpeed) + ".");
 		}
 
-		player = GameObject.FindGameObjectWithTag("Player");
-		if(player == null || player.GetComponent<FishController>() == null) {
-			player = null;
-			Debug.LogWarning("Your fish " + name + " cannot find the player.");
+		GameObject[] possiblePlayers = GameObject.FindGameObjectsWithTag("Player");
+		player = null;
+		foreach (GameObject possiblePlayer in possiblePlayers) {
+			if(possiblePlayer.GetComponent<FishController>() != null) {
+				player = possiblePlayer;
+				break;
+			}
+		}
+		if(player == null) {
+			Debug.LogError("Your fish " + name + " cannot find the player.");
 		}
 
 		if(FishType.EATABLE_FISH.Equals(this.fishType)) {
@@ -325,7 +331,7 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 			Vector2 movement = (separation + alignment + cohesion).normalized * speed * Time.deltaTime;
 			Vector3 desiredPosition = new Vector3(this.transform.position.x + movement.x, this.transform.position.y + movement.y, this.transform.position.z);
 
-			if(movement.magnitude == 0) {
+			if(movement.magnitude == 0 && secondaryMovementType != MovementType.SWARM) {
 				updateMovement(secondaryMovementType);
 			} else if(isFacingRight && movement.x >= 0 || !isFacingRight && movement.x <= 0) {
 				transform.position = desiredPosition;
@@ -515,7 +521,6 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 				Vector2 playerPosition = new Vector2(player.transform.position.x, player.transform.position.y);
 				FishController fishController = player.GetComponent<FishController>();
 				if(fishController != null && fishController.getIsReadyToMate() && Vector2.Distance(thisPosition, playerPosition) < awarenessRadius) {
-					Debug.Log ("mateable player in distance!!!");
 					if(!isMating && Input.GetKeyDown(KeyCode.Return)) {
 						fishController.mate(this);
 						isMating = true;
