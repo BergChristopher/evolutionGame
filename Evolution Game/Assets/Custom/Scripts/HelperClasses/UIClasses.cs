@@ -14,7 +14,9 @@ public class UIClasses : MonoBehaviour {
 	}
 
 	public void loadLevel(string name) {
-		EventManager.instance.triggerEvent(EventType.GAME_RESTARTED);
+		if(EventManager.instance != null) {
+			EventManager.instance.triggerEvent(EventType.GAME_RESTARTED);
+		}
 		Application.LoadLevel(name);
 	}
 }
