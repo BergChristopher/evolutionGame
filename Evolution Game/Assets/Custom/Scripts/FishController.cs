@@ -5,8 +5,8 @@ using System.Collections.Generic;
 public class FishController : MonoBehaviour, IEventReceiver {
 
 	private const int ESTIMATED_FRAMES_PER_SECOND = 60;
-	private const int SPEED_REWARDS_TO_UPGRADE = 2;
-	private const int STRENGTH_REWARDS_TO_UPGRADE = 6;
+	private const int SPEED_REWARDS_TO_UPGRADE = 1;
+	private const int STRENGTH_REWARDS_TO_UPGRADE = 1;
 	private const int LIBIDO_REWARDS_TO_MATE = 1;
 	private const float MATING_DURATION = 6f;
 
@@ -158,6 +158,16 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			eggs.Add(fishEgg);
 		} else {
 			Debug.LogError("Null fishEgg added to " + name);
+		}
+	}
+
+	public void removeEgg(FishEgg fishEgg) {
+		if(fishEgg != null) {
+			GameStatistics.decrementLives();
+			eggs.Remove(fishEgg);
+			Destroy(fishEgg.gameObject);
+		} else {
+			Debug.LogError("Null fishEgg in removeEgg at " + name);
 		}
 	}
 

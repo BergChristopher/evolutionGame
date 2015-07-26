@@ -139,6 +139,13 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 					}
 				}
 			}
+			//eat fisheggs if they fall into your mouth
+			if(fishType.Equals(FishType.TEETH_FISH) || fishType.Equals(FishType.WHITE_SHARK)) {
+				if (enteringCollider.gameObject.GetComponent<FishEgg>() != null) {
+					GetComponent<AudioSource>().Play();
+					player.GetComponent<FishController>().removeEgg(enteringCollider.gameObject.GetComponent<FishEgg>());
+				}
+			}
 			//be eaten by player
 			if (canBeEatenByPlayer && enteringCollider.gameObject.tag == "Player" && enteringCollider.GetType().Equals(typeof(CircleCollider2D))) {
 				FishController fish = enteringCollider.GetComponent<FishController>();
