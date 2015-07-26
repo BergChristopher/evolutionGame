@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 01e5ee0c7070a3d439897085ad781e3f
-timeCreated: 1437915128
+timeCreated: 1437916131
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -60,8 +60,8 @@ TextureImporter:
         y: 0
         width: 281
         height: 177
-      alignment: 5
-      pivot: {x: 1, y: .5}
+      alignment: 9
+      pivot: {x: .476999998, y: .5}
       border: {x: 0, y: 0, z: 0, w: 0}
     - name: teethfish_mouth_open
       rect:
@@ -70,8 +70,8 @@ TextureImporter:
         y: 0
         width: 294
         height: 177
-      alignment: 5
-      pivot: {x: 1, y: .5}
+      alignment: 0
+      pivot: {x: .5, y: .5}
       border: {x: 0, y: 0, z: 0, w: 0}
   spritePackingTag: 
   userData: 

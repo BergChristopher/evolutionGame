@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class FishController : MonoBehaviour, IEventReceiver {
 
 	private const int ESTIMATED_FRAMES_PER_SECOND = 60;
-	private const int SPEED_REWARDS_TO_UPGRADE = 6;
+	private const int SPEED_REWARDS_TO_UPGRADE = 1;
 	private const int STRENGTH_REWARDS_TO_UPGRADE = 6;
 	private const int LIBIDO_REWARDS_TO_MATE = 1;
 	private const float MATING_DURATION = 6f;
@@ -176,17 +176,24 @@ public class FishController : MonoBehaviour, IEventReceiver {
 	}
 
 	private void updateEvolutionState() {
-		if(isFast) {
+		/*if(isFast) {
 			spriteRenderer.color = new Color(1f,0.3f,0.3f,1f);
 		} else {
 			spriteRenderer.color = originalRenderColor;
+		}*/
+		if (isFast) {
+			animator.SetInteger("EvolveFast",1);
+		}
+		if (isStrong) {
+			animator.SetInteger("EvolveStrong",1);
 		}
 
-		if(isStrong) {
+
+		/*if(isStrong) {
 			GetComponent<Rigidbody2D>().mass = 800;
 		} else {
 			GetComponent<Rigidbody2D>().mass = originalMass;
-		}
+		}*/
 	}
 
 	private void updateFacingDirection() {
@@ -240,13 +247,18 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			animator.SetInteger("Action",1); //Action 1 indicates a transition to the eat animation
 			isReadyToEat = true;
 			recalculateSpeeds();
-
 		}
 		if (Input.GetKeyUp (KeyCode.Space) && isReadyToEat) {
 			animator.SetInteger("Action",0); //Action 0 indicates a transition to the normal animation
 			isReadyToEat = false;
 			recalculateSpeeds();
 		}
+		if (isReadyToMate) {
+			animator.SetInteger("Horny", 1); //Action 1 indicates a transition to the horny state
+		} else {
+			animator.SetInteger("Horny", 0); //Action 0 indicates a transition to the not horny state
+		}
+
 	}
 
 	private void recalculateSpeeds() {

@@ -1,0 +1,187 @@
+fileFormatVersion: 2
+guid: 8c5c3485b1a256c4387b90eab3b914cc
+timeCreated: 1437920524
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: strong_mouth_closed
+    21300002: strong_mouth_open
+    21300004: strong_mouth_closed_horny
+    21300006: strong_mouth_open_horny
+    21300008: normal_mouth_closed
+    21300010: normal_mouth_open
+    21300012: normal_mouth_closed_horny
+    21300014: normal_mouth_open_horny
+    21300016: fast_mouth_closed
+    21300018: fast_mouth_open
+    21300020: fast_mouth_closed_horny
+    21300022: fast_mouth_open_horny
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: .25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 8
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: .5, y: .5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    sprites:
+    - name: strong_mouth_closed
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 523
+        width: 954
+        height: 236
+      alignment: 9
+      pivot: {x: .430809677, y: .300139099}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: strong_mouth_open
+      rect:
+        serializedVersion: 2
+        x: 964
+        y: 523
+        width: 955
+        height: 236
+      alignment: 9
+      pivot: {x: .430809706, y: .300139099}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: strong_mouth_closed_horny
+      rect:
+        serializedVersion: 2
+        x: 1936
+        y: 523
+        width: 955
+        height: 236
+      alignment: 9
+      pivot: {x: .430809706, y: .300139099}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: strong_mouth_open_horny
+      rect:
+        serializedVersion: 2
+        x: 2904
+        y: 523
+        width: 954
+        height: 236
+      alignment: 9
+      pivot: {x: .430809706, y: .300139099}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: normal_mouth_closed
+      rect:
+        serializedVersion: 2
+        x: 61
+        y: 270
+        width: 661
+        height: 226
+      alignment: 9
+      pivot: {x: .529045165, y: .31240049}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: normal_mouth_open
+      rect:
+        serializedVersion: 2
+        x: 1028
+        y: 270
+        width: 658
+        height: 228
+      alignment: 9
+      pivot: {x: .529045224, y: .31240049}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: normal_mouth_closed_horny
+      rect:
+        serializedVersion: 2
+        x: 1998
+        y: 274
+        width: 661
+        height: 226
+      alignment: 9
+      pivot: {x: .529045224, y: .31240049}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: normal_mouth_open_horny
+      rect:
+        serializedVersion: 2
+        x: 2969
+        y: 268
+        width: 659
+        height: 228
+      alignment: 9
+      pivot: {x: .529045224, y: .31240049}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: fast_mouth_closed
+      rect:
+        serializedVersion: 2
+        x: 61
+        y: 0
+        width: 893
+        height: 225
+      alignment: 9
+      pivot: {x: .392503262, y: .308011264}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: fast_mouth_open
+      rect:
+        serializedVersion: 2
+        x: 1029
+        y: 0
+        width: 890
+        height: 225
+      alignment: 9
+      pivot: {x: .392503291, y: .308011293}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: fast_mouth_closed_horny
+      rect:
+        serializedVersion: 2
+        x: 1998
+        y: 0
+        width: 893
+        height: 225
+      alignment: 9
+      pivot: {x: .392503291, y: .308011293}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: fast_mouth_open_horny
+      rect:
+        serializedVersion: 2
+        x: 2970
+        y: 0
+        width: 888
+        height: 225
+      alignment: 9
+      pivot: {x: .392503291, y: .308011293}
+      border: {x: 0, y: 0, z: 0, w: 0}
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
