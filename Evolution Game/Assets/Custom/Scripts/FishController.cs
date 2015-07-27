@@ -129,11 +129,13 @@ public class FishController : MonoBehaviour, IEventReceiver {
 		if (!isFast && GameStatistics.getGatheredRewardsOfType(RewardType.SPEED) >= SPEED_REWARDS_TO_UPGRADE) {
 			GameStatistics.decrementGatheredRewardsOfType(RewardType.SPEED, SPEED_REWARDS_TO_UPGRADE);
 			isFast = true;
+			AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("evolve"), transform.position, 1.0F);
 		} 
 
 		if(!isStrong && GameStatistics.getGatheredRewardsOfType(RewardType.STRENGTH) >= STRENGTH_REWARDS_TO_UPGRADE) {
 			GameStatistics.decrementGatheredRewardsOfType(RewardType.STRENGTH, STRENGTH_REWARDS_TO_UPGRADE);
 			isStrong = true;
+			AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("evolve"), transform.position, 1.0F);
 		}
 			
 		if(GameStatistics.getGatheredRewardsOfType(RewardType.LIBIDO) >= LIBIDO_REWARDS_TO_MATE) {

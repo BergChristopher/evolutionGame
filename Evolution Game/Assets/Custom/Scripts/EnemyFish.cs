@@ -539,6 +539,7 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 			if(isMating && isReadyToLayEgg) {
 				FishController fishController = player.GetComponent<FishController>();
 				GameObject fishEgg = (GameObject) Instantiate(Resources.Load("fishEgg"), transform.position, transform.rotation);
+				AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("egg"), transform.position, 1.0F);
 				FishEgg fishEggScript = fishEgg.GetComponent<FishEgg>();
 				if(fishEggScript != null) {
 					if(fishController.getIsStrong()) {
