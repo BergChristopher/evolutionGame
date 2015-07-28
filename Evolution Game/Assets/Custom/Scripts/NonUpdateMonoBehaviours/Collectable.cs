@@ -31,7 +31,7 @@ public class Collectable : MonoBehaviour, IEventReceiver {
 				fish.evolve();
 				fish.GetComponent<AudioSource>().Play();
 				GameObject nom = (GameObject) Instantiate(Resources.Load("nom"), transform.position, new Quaternion(0f,0f,0f,0f));
-				Destroy (nom, 1);
+				Destroy (nom, 0.2F);
 
 				if(collectableType == CollectableType.ENEMY_FISH_EGG) {
 					EventManager.instance.triggerEvent(EventType.GAME_WON);
