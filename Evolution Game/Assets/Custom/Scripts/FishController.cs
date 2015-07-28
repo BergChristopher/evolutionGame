@@ -14,6 +14,7 @@ public class FishController : MonoBehaviour, IEventReceiver {
 	public Vector2 dragCoefficient = new Vector2 (0.01f, 0.015f);
 	public Vector2 maximumVelocity = new Vector2 (20f,10f); // units per second
 	public GameObject eggNest; //the parent gameobject of all eggs
+	public GameObject heartEmitter;
 
 	private Animator animator;
 
@@ -38,12 +39,12 @@ public class FishController : MonoBehaviour, IEventReceiver {
 
 	// Use this for initialization
 	void Start () {
-		animator = this.GetComponent<Animator>();
+		animator = GetComponent<Animator>();
 		if (animator == null) {
-			Debug.LogWarning("No animator attached to FishController on " + this.name);
+			Debug.LogWarning("No animator attached to FishController on " + name);
 		}
 		if(eggNest == null) {
-			Debug.LogWarning("No eggNest attached to FishController on " + this.name);
+			Debug.LogWarning("No eggNest attached to FishController on " + name);
 		} else {
 			foreach (FishEgg egg in eggNest.GetComponentsInChildren<FishEgg>())
 			{
@@ -53,13 +54,19 @@ public class FishController : MonoBehaviour, IEventReceiver {
 		}
 
 		if(GetComponent<AudioSource>() == null) {
-			Debug.LogWarning("No AudioSource for eat sound attached to FishController on " + this.name);
+			Debug.LogWarning("No AudioSource for eat sound attached to FishController on " + name);
 		}
 
 		if(GetComponent<Rigidbody2D>() != null) {
 			originalMass = GetComponent<Rigidbody2D>().mass;
 		} else {
-			Debug.LogWarning("No Rigidbody2D attached to FishController on " + this.name);
+			Debug.LogWarning("No Rigidbody2D attached to FishController on " + name);
+		}
+
+		if(heartEmitter == null) {
+			Debug.LogWarning("No heartEmitter attached to FishController on " + name);
+		} else {
+			heartEmitter.gameObject.SetActive(false);
 		}
 
 		originalMaximumVelocity = new Vector2(maximumVelocity.x, maximumVelocity.y);
@@ -116,6 +123,7 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			isFast = currentEgg.spawnsFastFish;
 			isStrong = currentEgg.spawnsStrongFish;
 			isReadyToMate = false;
+			heartEmitter.gameObject.SetActive(false);
 			evolve();
 			this.transform.position = currentEgg.transform.position;
 			eggs.Remove(currentEgg);
@@ -140,6 +148,7 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			
 		if(GameStatistics.getGatheredRewardsOfType(RewardType.LIBIDO) >= LIBIDO_REWARDS_TO_MATE) {
 			isReadyToMate = true;
+			heartEmitter.gameObject.SetActive(true);
 		}
 
 		recalculateSpeeds();
@@ -271,6 +280,7 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			matingPartner = null;
 			GameStatistics.decrementGatheredRewardsOfType(RewardType.LIBIDO, LIBIDO_REWARDS_TO_MATE);
 			isReadyToMate = false;
+			heartEmitter.gameObject.SetActive(false);
 			evolve();
 		}
 	}
