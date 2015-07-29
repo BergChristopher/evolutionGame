@@ -15,8 +15,10 @@ public class FishController : MonoBehaviour, IEventReceiver {
 	public Vector2 maximumVelocity = new Vector2 (20f,10f); // units per second
 	public GameObject eggNest; //the parent gameobject of all eggs
 	public GameObject heartEmitter;
+	public GameObject bubbleEmitter;
 
 	private Animator animator;
+	private FishtailController fishtailController;
 
 	private Vector2 originalSwimAcceleration;
 	private Vector2 originalMaximumVelocity;
@@ -30,7 +32,6 @@ public class FishController : MonoBehaviour, IEventReceiver {
 	private EnemyFish matingPartner = null;
 	private bool isAlive = true;
 	private List<FishEgg> eggs = new List<FishEgg>();
-	private SpriteRenderer spriteRenderer;
 	private bool isGameActive = true;
 
 	//evolving states
@@ -67,6 +68,16 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			Debug.LogWarning("No heartEmitter attached to FishController on " + name);
 		} else {
 			heartEmitter.gameObject.SetActive(false);
+		}
+
+		if(bubbleEmitter == null) {
+			Debug.LogWarning("No bubbleEmitter attached to FishController on " + name);
+		} 
+
+		if(GetComponentsInChildren<FishtailController>().Length == 1) {
+			fishtailController = GetComponentInChildren<FishtailController>();
+		} else {
+			Debug.Log("Found less or more than one FishtailController on " + name);
 		}
 
 		originalMaximumVelocity = new Vector2(maximumVelocity.x, maximumVelocity.y);
@@ -120,11 +131,10 @@ public class FishController : MonoBehaviour, IEventReceiver {
 		} else {
 			FishEgg currentEgg = eggs[eggs.Count - 1]; 
 			GameStatistics.clearRewardsAndCollectables();
-			isFast = currentEgg.spawnsFastFish;
-			isStrong = currentEgg.spawnsStrongFish;
+			updateFastState(currentEgg.spawnsFastFish);
+			updateStrongState(currentEgg.spawnsStrongFish);
 			isReadyToMate = false;
 			heartEmitter.gameObject.SetActive(false);
-			evolve();
 			this.transform.position = currentEgg.transform.position;
 			eggs.Remove(currentEgg);
 			Destroy(currentEgg.gameObject);
@@ -136,13 +146,13 @@ public class FishController : MonoBehaviour, IEventReceiver {
 	public void evolve() {
 		if (!isFast && GameStatistics.getGatheredRewardsOfType(RewardType.SPEED) >= SPEED_REWARDS_TO_UPGRADE) {
 			GameStatistics.decrementGatheredRewardsOfType(RewardType.SPEED, SPEED_REWARDS_TO_UPGRADE);
-			isFast = true;
+			updateFastState(true);
 			AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("evolve"), transform.position, 1.0F);
 		} 
 
 		if(!isStrong && GameStatistics.getGatheredRewardsOfType(RewardType.STRENGTH) >= STRENGTH_REWARDS_TO_UPGRADE) {
 			GameStatistics.decrementGatheredRewardsOfType(RewardType.STRENGTH, STRENGTH_REWARDS_TO_UPGRADE);
-			isStrong = true;
+			updateStrongState(true);
 			AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("evolve"), transform.position, 1.0F);
 		}
 			
@@ -250,12 +260,6 @@ public class FishController : MonoBehaviour, IEventReceiver {
 		} else {
 			animator.SetInteger("Horny", 0); //Action 0 indicates a transition to the not horny state
 		}*/
-		if (isStrong) {
-			GetComponent<Rigidbody2D>().mass = 800;
-		} else {
-			GetComponent<Rigidbody2D>().mass = originalMass;
-		}
-		animator.SetBool ("isStrong", isStrong);
 	}
 
 	private void recalculateSpeeds() {
@@ -282,6 +286,28 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			isReadyToMate = false;
 			heartEmitter.gameObject.SetActive(false);
 			evolve();
+		}
+	}
+
+	private void updateStrongState(bool strong) {
+		isStrong = strong;
+		if (strong) {
+			GetComponent<Rigidbody2D>().mass = 800;
+			bubbleEmitter.transform.localPosition = new Vector3(-3f, 0.1f, 0f);
+			heartEmitter.transform.localPosition = new Vector3(-3f, 0.1f, 0f);
+		} else {
+			GetComponent<Rigidbody2D>().mass = originalMass;
+			bubbleEmitter.transform.localPosition = new Vector3(-2.4f, 0.1f, 0f);
+			heartEmitter.transform.localPosition = new Vector3(-2.4f, 0.1f, 0f);
+		}
+		animator.SetBool ("isStrong", isStrong);
+	}
+
+	private void updateFastState(bool fast) {
+		isFast = fast;
+		if(fishtailController != null) {
+			fishtailController.setIsFast(isFast);
+			fishtailController.updateCollider();
 		}
 	}
 }
