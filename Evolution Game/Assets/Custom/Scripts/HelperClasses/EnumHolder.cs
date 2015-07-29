@@ -53,3 +53,9 @@ public enum EventType {
 	GAME_WON,
 	GAME_RESTARTED
 }
+
+public enum EmitterType {
+	NONE,
+	BUBBLES,
+	HEARTS
+}

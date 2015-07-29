@@ -15,6 +15,7 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 
 	private GameObject player = null;
 	private Animator animator;
+	private Emitter heartEmitter;
 	private bool isFacingRight = true;
 	private bool isTurning = false;
 	private bool canBeEatenByPlayer = false;
@@ -109,6 +110,19 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 		if(GetComponent<EdgeCollider2D>() == null || GetComponent<EdgeCollider2D>().isTrigger) {
 			Debug.LogWarning(this.name + " has no non trigger EdgeCollider2D attached and might therefore not respond to environmental collissions correctly.");
 		}
+
+		int hearts = 0;
+		foreach(Emitter emitter in GetComponentsInChildren<Emitter>()) {
+			if(emitter.emitterType == EmitterType.HEARTS) {
+				hearts++;
+				heartEmitter = emitter;
+				heartEmitter.gameObject.SetActive(false);
+			}
+		}
+		if(hearts != 1 && fishType == FishType.READY_TO_MATE_FISH) {
+			Debug.LogError(hearts + " instead of one heartEmitter attached to EnemyFish's Children on " + name);
+		}
+
 		fishTypeToListOfEnemyFish.Clear();
 		addMeToDictionaryOfFish();
 		EventManager.instance.addReceiver(EventType.GAME_OVER, this);
@@ -529,11 +543,17 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 				Vector2 thisPosition = getMouthPosition();
 				Vector2 playerPosition = new Vector2(player.transform.position.x, player.transform.position.y);
 				FishController fishController = player.GetComponent<FishController>();
-				if(fishController != null && fishController.getIsReadyToMate() && Vector2.Distance(thisPosition, playerPosition) < awarenessRadius) {
+				if(fishController != null && fishController.getIsReadyToMate() && 
+				   Vector2.Distance(thisPosition, playerPosition) < awarenessRadius) {
+					heartEmitter.gameObject.SetActive(true);
+					fishController.attract(true);
 					if(!isMating && Input.GetKeyDown(KeyCode.Return)) {
 						fishController.mate(this);
 						isMating = true;
 					}
+				} else {
+					heartEmitter.gameObject.SetActive(false);
+					fishController.attract(false);
 				}
 			}
 			if(isMating && isReadyToLayEgg) {

@@ -14,11 +14,11 @@ public class FishController : MonoBehaviour, IEventReceiver {
 	public Vector2 dragCoefficient = new Vector2 (0.01f, 0.015f);
 	public Vector2 maximumVelocity = new Vector2 (20f,10f); // units per second
 	public GameObject eggNest; //the parent gameobject of all eggs
-	public GameObject heartEmitter;
-	public GameObject bubbleEmitter;
 
 	private Animator animator;
 	private FishtailController fishtailController;
+	private Emitter heartEmitter;
+	private Emitter bubbleEmitter;
 
 	private Vector2 originalSwimAcceleration;
 	private Vector2 originalMaximumVelocity;
@@ -64,15 +64,25 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			Debug.LogWarning("No Rigidbody2D attached to FishController on " + name);
 		}
 
-		if(heartEmitter == null) {
-			Debug.LogWarning("No heartEmitter attached to FishController on " + name);
-		} else {
-			heartEmitter.gameObject.SetActive(false);
+		int hearts = 0;
+		int bubbles = 0;
+		foreach(Emitter emitter in GetComponentsInChildren<Emitter>()) {
+			if(emitter.emitterType == EmitterType.HEARTS) {
+				hearts++;
+				heartEmitter = emitter;
+				heartEmitter.gameObject.SetActive(false);
+			}
+			if(emitter.emitterType == EmitterType.BUBBLES) {
+				bubbles++;
+				bubbleEmitter = emitter;
+			}
 		}
-
-		if(bubbleEmitter == null) {
-			Debug.LogWarning("No bubbleEmitter attached to FishController on " + name);
-		} 
+		if(hearts != 1) {
+			Debug.LogError(hearts + " instead of one heartEmitter attached to FishControllers Children on " + name);
+		}
+		if(bubbles != 1) {
+			Debug.LogError(bubbles + " instead of one bubbleEmitter attached to FishControllers Children on " + name);
+		}
 
 		if(GetComponentsInChildren<FishtailController>().Length == 1) {
 			fishtailController = GetComponentInChildren<FishtailController>();
@@ -158,10 +168,13 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			
 		if(GameStatistics.getGatheredRewardsOfType(RewardType.LIBIDO) >= LIBIDO_REWARDS_TO_MATE) {
 			isReadyToMate = true;
-			heartEmitter.gameObject.SetActive(true);
 		}
 
 		recalculateSpeeds();
+	}
+
+	public void attract(bool attract) {
+		heartEmitter.gameObject.SetActive(attract);
 	}
 
 	public void mate(EnemyFish matingPartner) {
