@@ -4,9 +4,9 @@ using System.Collections;
 public class LevelSettings : MonoBehaviour {
 
 	public const int ESTIMATED_FRAMES_PER_SECOND = 60;
-	public const int SPEED_REWARDS_TO_UPGRADE = 2;
-	public const int STRENGTH_REWARDS_TO_UPGRADE = 1;
-	public const int LIBIDO_REWARDS_TO_MATE = 1;
+	public const int SPEED_REWARDS_TO_UPGRADE = 25;
+	public const int STRENGTH_REWARDS_TO_UPGRADE = 14;
+	public const int LIBIDO_REWARDS_TO_MATE = 8;
 	public const float MATING_DURATION = 11f;
 
 	private static LevelSettings _instance;
