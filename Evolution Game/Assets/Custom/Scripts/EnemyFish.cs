@@ -191,6 +191,9 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 		if(eventType == EventType.GAME_OVER || eventType == EventType.GAME_WON) {
 			isGameActive = false;
 		}
+		if(eventType == EventType.PLAYER_DEATH) {
+			stopMating(false);
+		}
 	}
 	
 	public void layEggs() {
@@ -556,24 +559,43 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 					fishController.attract(false);
 				}
 			}
+			if(isMating && !isReadyToLayEgg) {
+				transform.Rotate(Vector3.down);
+			}
 			if(isMating && isReadyToLayEgg) {
-				FishController fishController = player.GetComponent<FishController>();
-				GameObject fishEgg = (GameObject) Instantiate(Resources.Load("fishEgg"), transform.position, transform.rotation);
-				AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("egg"), transform.position, 1.0F);
-				FishEgg fishEggScript = fishEgg.GetComponent<FishEgg>();
-				if(fishEggScript != null) {
-					if(fishController.getIsStrong()) {
-						fishEggScript.spawnsStrongFish = true;
-					}
-					if(fishController.getIsFast()) {
-						fishEggScript.spawnsFastFish = true;
-					}
-					fishController.addEgg (fishEggScript);
-					isMating = false;
-					isReadyToLayEgg = false;
-				} else {
-					Debug.LogError("Prefab fishEgg has no FishEgg script attached");
+				stopMating(true);
+			}
+		}
+	}
+
+	private void stopMating(bool success) {
+		isMating = false;
+		isReadyToLayEgg = false;
+		heartEmitter.gameObject.SetActive(false);
+		FishController fishController = player.GetComponent<FishController>();
+		if(fishController != null) {
+			fishController.attract(false);
+		}
+		if(transform.eulerAngles.y % 360 > 90 && transform.eulerAngles.y % 360 < 270) {
+			transform.eulerAngles = new Vector3(transform.eulerAngles.x, 180 ,transform.eulerAngles.z);
+		} else {
+			transform.eulerAngles = new Vector3(transform.eulerAngles.x, 0 ,transform.eulerAngles.z);
+		}
+
+		if(success) {
+			GameObject fishEgg = (GameObject) Instantiate(Resources.Load("fishEgg"), transform.position, transform.rotation);
+			AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("egg"), transform.position, 1.0F);
+			FishEgg fishEggScript = fishEgg.GetComponent<FishEgg>();
+			if(fishEggScript != null) {
+				if(fishController.getIsStrong()) {
+					fishEggScript.spawnsStrongFish = true;
 				}
+				if(fishController.getIsFast()) {
+					fishEggScript.spawnsFastFish = true;
+				}
+				fishController.addEgg (fishEggScript);
+			} else {
+				Debug.LogError("Prefab fishEgg has no FishEgg script attached");
 			}
 		}
 	}

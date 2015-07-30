@@ -12,6 +12,9 @@ public class GUIManager : MonoBehaviour, IEventReceiver {
 	public Text deaths;
 	public Text gameOver;
 	public Button restartButton;
+	public Image speedProgressImage;
+	public Image strengthProgressImage;
+	public Image libidoProgressImage;
 
 	public static GUIManager instance {
 		get {
@@ -50,6 +53,15 @@ public class GUIManager : MonoBehaviour, IEventReceiver {
 			Debug.LogWarning("No Button restartButton attached to " + this.name);
 		} else {
 			setButtonActiveState(restartButton, false);
+		}
+		if(speedProgressImage == null) {
+			Debug.LogError("No speedProgressImage for collectables attached to " + this.name);
+		}
+		if(strengthProgressImage == null) {
+			Debug.LogError("No strengthProgressImage for collectables attached to " + this.name);
+		}
+		if(libidoProgressImage == null) {
+			Debug.LogError("No libidoProgressImage for collectables attached to " + this.name);
 		}
 		EventManager.instance.addReceiver(EventType.GAME_OVER, this);
 		EventManager.instance.addReceiver(EventType.GAME_WON, this);
@@ -98,7 +110,7 @@ public class GUIManager : MonoBehaviour, IEventReceiver {
 		}
 	}
 
-	public void updateCollectablesText() {
+	public void updateCollectablesAndRewards() {
 		if(collectables != null) {
 			Dictionary<CollectableType, int> gatheredCollectables = GameStatistics.getGatheredCollectables(); 
 			collectables.text = "";
@@ -109,6 +121,30 @@ public class GUIManager : MonoBehaviour, IEventReceiver {
 			foreach (KeyValuePair<RewardType, int> pair in gatheredRewards) {
 				collectables.text += pair.Key.getDescription() + ": " + pair.Value.ToString() + "\n";
 			}
+		}
+		updateSpeedProgressImage();
+		updateStrengthProgressImage();
+		updateLibidoProgressImage();
+	}
+
+	public void updateSpeedProgressImage() {
+		if(speedProgressImage != null) {
+			float percentage = (float) GameStatistics.getGatheredRewardsOfType(RewardType.SPEED) / LevelSettings.SPEED_REWARDS_TO_UPGRADE;
+			speedProgressImage.fillAmount = Mathf.Min(1f, percentage);
+		}
+	}
+
+	public void updateStrengthProgressImage() {
+		if(strengthProgressImage != null) {
+			float percentage = (float) GameStatistics.getGatheredRewardsOfType(RewardType.STRENGTH) / LevelSettings.STRENGTH_REWARDS_TO_UPGRADE;
+			strengthProgressImage.fillAmount = Mathf.Min(1f, percentage);
+		}
+	}
+
+	public void updateLibidoProgressImage() {
+		if(libidoProgressImage != null) {
+			float percentage = (float) GameStatistics.getGatheredRewardsOfType(RewardType.LIBIDO) / LevelSettings.LIBIDO_REWARDS_TO_MATE;
+			libidoProgressImage.fillAmount = Mathf.Min(1f, percentage);
 		}
 	}
 

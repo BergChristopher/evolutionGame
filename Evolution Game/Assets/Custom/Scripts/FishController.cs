@@ -4,12 +4,6 @@ using System.Collections.Generic;
 
 public class FishController : MonoBehaviour, IEventReceiver {
 
-	private const int ESTIMATED_FRAMES_PER_SECOND = 60;
-	private const int SPEED_REWARDS_TO_UPGRADE = 2;
-	private const int STRENGTH_REWARDS_TO_UPGRADE = 1;
-	private const int LIBIDO_REWARDS_TO_MATE = 1;
-	private const float MATING_DURATION = 6f;
-
 	public Vector2 swimAcceleration = new Vector2 (4f,2f);
 	public Vector2 dragCoefficient = new Vector2 (0.01f, 0.015f);
 	public Vector2 maximumVelocity = new Vector2 (20f,10f); // units per second
@@ -143,8 +137,7 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			GameStatistics.clearRewardsAndCollectables();
 			updateFastState(currentEgg.spawnsFastFish);
 			updateStrongState(currentEgg.spawnsStrongFish);
-			isReadyToMate = false;
-			heartEmitter.gameObject.SetActive(false);
+			stopMating(false);
 			this.transform.position = currentEgg.transform.position;
 			eggs.Remove(currentEgg);
 			Destroy(currentEgg.gameObject);
@@ -154,19 +147,17 @@ public class FishController : MonoBehaviour, IEventReceiver {
 	}
 
 	public void evolve() {
-		if (!isFast && GameStatistics.getGatheredRewardsOfType(RewardType.SPEED) >= SPEED_REWARDS_TO_UPGRADE) {
-			GameStatistics.decrementGatheredRewardsOfType(RewardType.SPEED, SPEED_REWARDS_TO_UPGRADE);
+		if (!isFast && GameStatistics.getGatheredRewardsOfType(RewardType.SPEED) >= LevelSettings.SPEED_REWARDS_TO_UPGRADE) {
 			updateFastState(true);
 			AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("evolve"), transform.position, 1.0F);
 		} 
 
-		if(!isStrong && GameStatistics.getGatheredRewardsOfType(RewardType.STRENGTH) >= STRENGTH_REWARDS_TO_UPGRADE) {
-			GameStatistics.decrementGatheredRewardsOfType(RewardType.STRENGTH, STRENGTH_REWARDS_TO_UPGRADE);
+		if(!isStrong && GameStatistics.getGatheredRewardsOfType(RewardType.STRENGTH) >= LevelSettings.STRENGTH_REWARDS_TO_UPGRADE) {
 			updateStrongState(true);
 			AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("evolve"), transform.position, 1.0F);
 		}
 			
-		if(GameStatistics.getGatheredRewardsOfType(RewardType.LIBIDO) >= LIBIDO_REWARDS_TO_MATE) {
+		if(GameStatistics.getGatheredRewardsOfType(RewardType.LIBIDO) >= LevelSettings.LIBIDO_REWARDS_TO_MATE) {
 			isReadyToMate = true;
 		}
 
@@ -227,8 +218,8 @@ public class FishController : MonoBehaviour, IEventReceiver {
 		previousVelocity.x = velocity.x; 
 		previousVelocity.y = velocity.y;
 
-		velocity.x = previousVelocity.x + (Input.GetAxis ("Horizontal") * swimAcceleration.x * Time.deltaTime * ESTIMATED_FRAMES_PER_SECOND); //v=v0+a*(t-t0)
-		velocity.y = previousVelocity.y + (Input.GetAxis ("Vertical") * swimAcceleration.y * Time.deltaTime * ESTIMATED_FRAMES_PER_SECOND); //v=v0+a*(t-t0)
+		velocity.x = previousVelocity.x + (Input.GetAxis ("Horizontal") * swimAcceleration.x * Time.deltaTime * LevelSettings.ESTIMATED_FRAMES_PER_SECOND); //v=v0+a*(t-t0)
+		velocity.y = previousVelocity.y + (Input.GetAxis ("Vertical") * swimAcceleration.y * Time.deltaTime * LevelSettings.ESTIMATED_FRAMES_PER_SECOND); //v=v0+a*(t-t0)
 		
 		float horizontalDrag = (1 - Mathf.Abs(Input.GetAxis ("Horizontal"))) * ((dragCoefficient.x * (velocity.x * velocity.x)) + (dragCoefficient.x));
 		float verticalDrag = (1 - Mathf.Abs(Input.GetAxis ("Vertical"))) * ((dragCoefficient.y * (velocity.y * velocity.y)) + (dragCoefficient.y));
@@ -289,16 +280,9 @@ public class FishController : MonoBehaviour, IEventReceiver {
 	}
 
 	private void updateMatingBehaviour () {
-		transform.Rotate(new Vector3(0, 1, 0));
-		if(Time.time > matingStartTime + MATING_DURATION) {
-			isCurrentlyMating = false;
-			transform.eulerAngles = new Vector3(transform.eulerAngles.x, 180 ,transform.eulerAngles.z);
-			matingPartner.layEggs();
-			matingPartner = null;
-			GameStatistics.decrementGatheredRewardsOfType(RewardType.LIBIDO, LIBIDO_REWARDS_TO_MATE);
-			isReadyToMate = false;
-			heartEmitter.gameObject.SetActive(false);
-			evolve();
+		transform.Rotate(Vector3.up * 2);
+		if(Time.time > matingStartTime + LevelSettings.MATING_DURATION) {
+			stopMating(true);
 		}
 	}
 
@@ -322,5 +306,22 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			fishtailController.setIsFast(isFast);
 			fishtailController.updateCollider();
 		}
+	}
+
+	private void stopMating(bool success) {
+		isCurrentlyMating = false;
+		if(transform.eulerAngles.y % 360 > 90 && transform.eulerAngles.y % 360 < 270) {
+			transform.eulerAngles = new Vector3(transform.eulerAngles.x, 180 ,transform.eulerAngles.z);
+		} else {
+			transform.eulerAngles = new Vector3(transform.eulerAngles.x, 0 ,transform.eulerAngles.z);
+		}
+		if(success) {
+			matingPartner.layEggs();
+		}
+		matingPartner = null;
+		GameStatistics.decrementGatheredRewardsOfType(RewardType.LIBIDO, LevelSettings.LIBIDO_REWARDS_TO_MATE);
+		isReadyToMate = false;
+		heartEmitter.gameObject.SetActive(false);
+		evolve();
 	}
 }

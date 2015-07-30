@@ -23,7 +23,7 @@ public static class GameStatistics {
 		} else {
 			gatheredCollectablesByType.Add(collectableType, 1);
 		}
-		GUIManager.instance.updateCollectablesText();
+		GUIManager.instance.updateCollectablesAndRewards();
 	}
 
 	public static void addReward(RewardType rewardType) {
@@ -33,7 +33,7 @@ public static class GameStatistics {
 		} else {
 			gatheredRewardsByType.Add(rewardType, 1);
 		}
-		GUIManager.instance.updateCollectablesText();
+		GUIManager.instance.updateCollectablesAndRewards();
 	}
 
 	public static void addDeathByFish(FishType fishType) {
@@ -103,7 +103,7 @@ public static class GameStatistics {
 			gatheredRewardsByType[rewardType] -= amount;
 			success = true;
 		}
-		GUIManager.instance.updateCollectablesText();
+		GUIManager.instance.updateCollectablesAndRewards();
 		return success;
 	}
 
@@ -112,7 +112,7 @@ public static class GameStatistics {
 		gatheredCollectables = 0;
 		gatheredCollectablesByType.Clear();
 		gatheredRewardsByType.Clear();
-		GUIManager.instance.updateCollectablesText();
+		GUIManager.instance.updateCollectablesAndRewards();
 	}
 
 	public static void clearAll() {
