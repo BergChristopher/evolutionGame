@@ -131,6 +131,7 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			isAlive = false;
 			Debug.Log ("trigger game over");
 			EventManager.instance.triggerEvent(EventType.GAME_OVER);
+			AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("lose"), transform.position, 1.0F);
 			Destroy (this.gameObject);
 		} else {
 			FishEgg currentEgg = eggs[eggs.Count - 1]; 

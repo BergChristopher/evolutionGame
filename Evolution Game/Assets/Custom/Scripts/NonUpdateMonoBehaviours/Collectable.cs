@@ -35,6 +35,7 @@ public class Collectable : MonoBehaviour, IEventReceiver {
 
 				if(collectableType == CollectableType.ENEMY_FISH_EGG) {
 					EventManager.instance.triggerEvent(EventType.GAME_WON);
+					AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("win"), transform.position, 1.0F);
 				}
 
 				if(rewardType == RewardType.NONE) {
