@@ -172,6 +172,7 @@ public class FishController : MonoBehaviour, IEventReceiver {
 		if(!isCurrentlyMating){
 			isCurrentlyMating = true;
 			this.matingPartner = matingPartner;
+			AudioSource.PlayClipAtPoint((AudioClip)Resources.Load("mating"), transform.position, 1.0F);
 			matingStartTime = Time.time;
 		}
 	}

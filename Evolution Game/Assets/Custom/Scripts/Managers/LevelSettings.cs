@@ -7,7 +7,7 @@ public class LevelSettings : MonoBehaviour {
 	public const int SPEED_REWARDS_TO_UPGRADE = 2;
 	public const int STRENGTH_REWARDS_TO_UPGRADE = 1;
 	public const int LIBIDO_REWARDS_TO_MATE = 1;
-	public const float MATING_DURATION = 6f;
+	public const float MATING_DURATION = 11f;
 
 	private static LevelSettings _instance;
 
