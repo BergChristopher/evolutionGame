@@ -308,6 +308,7 @@ public class FishController : MonoBehaviour, IEventReceiver {
 			fishtailController.setIsFast(isFast);
 			fishtailController.updateCollider();
 		}
+		recalculateSpeeds();
 	}
 
 	private void stopMating(bool success) {

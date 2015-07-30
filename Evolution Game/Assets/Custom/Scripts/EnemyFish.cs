@@ -139,6 +139,10 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 		}
 	}
 
+	void OnDestroy() {
+		removeMeFromDictionary();
+	}
+
 	void OnTriggerStay2D(Collider2D enteringCollider) {
 		if(!onTriggerStayWasAlreadyExecutedThisFrame) {
 			//eat player
@@ -523,7 +527,6 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 	private void handleMyDeath()
 	{
 		if(RewardType.NONE == rewardType) {
-			removeMeFromDictionary ();
 			Destroy (this.gameObject);
 		} else {
 			respawnMe();
