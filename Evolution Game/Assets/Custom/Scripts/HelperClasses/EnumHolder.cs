@@ -1,7 +1,7 @@
 ﻿public enum FishType { 
-	TEETH_FISH, 
+	AGGRESSIVE_NON_INTERACTING, 
 	NEUTRAL_FISH, 
-	WHITE_SHARK, 
+	AGGRESSIVE_INTERACTING, 
 	EATABLE_FISH,
 	READY_TO_MATE_FISH
 };
@@ -58,4 +58,16 @@ public enum EmitterType {
 	NONE,
 	BUBBLES,
 	HEARTS
+}
+
+public enum FishCategoryType {
+	PLAYER_LIKE,
+	HERING,
+	SPEEDY,
+	ZEBRA,
+	YELLOW,
+	SHARK,
+	SWORDFISH,
+	TEETH,
+	CLOWN
 }

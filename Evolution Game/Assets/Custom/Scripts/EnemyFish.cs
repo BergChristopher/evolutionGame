@@ -4,7 +4,8 @@ using System.Collections.Generic;
 
 public class EnemyFish : MonoBehaviour, IEventReceiver {
 
-	public FishType fishType = FishType.TEETH_FISH;
+	public FishCategoryType fishCategoryType = FishCategoryType.PLAYER_LIKE;
+	public FishType fishType = FishType.AGGRESSIVE_INTERACTING;
 	public MovementType movementType = MovementType.HORIZONTAL;
 	public MovementType secondaryMovementType = MovementType.NONE;
 	public RewardType rewardType = RewardType.NONE; 
@@ -51,7 +52,7 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 	public Vector2 separationRadiusAndImpact = new Vector2(3f,10f); //avoid collision
 	public Vector2 alignmentRadiusAndImpact = new Vector2(6f,5f); //align direction
 	public Vector2 cohesionRadiusAndImpact = new Vector2(10f,2f); //attract other fish of same type to join swarm
-	private static Dictionary<FishType, List<EnemyFish>> fishTypeToListOfEnemyFish = new Dictionary<FishType, List<EnemyFish>>(); 
+	private static Dictionary<FishCategoryType, List<EnemyFish>> fishCategoryTypeToListOfEnemyFish = new Dictionary<FishCategoryType, List<EnemyFish>>(); 
 
 	void Start () {
 		animator = this.GetComponent<Animator>();
@@ -123,7 +124,6 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 			Debug.LogError(hearts + " instead of one heartEmitter attached to EnemyFish's Children on " + name);
 		}
 
-		fishTypeToListOfEnemyFish.Clear();
 		addMeToDictionaryOfFish();
 		EventManager.instance.addReceiver(EventType.GAME_OVER, this);
 		EventManager.instance.addReceiver(EventType.GAME_WON, this);
@@ -142,7 +142,7 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 	void OnTriggerStay2D(Collider2D enteringCollider) {
 		if(!onTriggerStayWasAlreadyExecutedThisFrame) {
 			//eat player
-			if(fishType.Equals(FishType.TEETH_FISH) || fishType.Equals(FishType.WHITE_SHARK)) {
+			if(fishType.Equals(FishType.AGGRESSIVE_NON_INTERACTING) || fishType.Equals(FishType.AGGRESSIVE_INTERACTING)) {
 				if (enteringCollider.gameObject.tag == "Player") {
 					FishController fish = enteringCollider.GetComponent<FishController>();
 					if(fish != null) {
@@ -154,7 +154,7 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 				}
 			}
 			//eat fisheggs if they fall into your mouth
-			if(fishType.Equals(FishType.TEETH_FISH) || fishType.Equals(FishType.WHITE_SHARK)) {
+			if(fishType.Equals(FishType.AGGRESSIVE_NON_INTERACTING) || fishType.Equals(FishType.AGGRESSIVE_INTERACTING)) {
 				if (enteringCollider.gameObject.GetComponent<FishEgg>() != null) {
 					GetComponent<AudioSource>().Play();
 					player.GetComponent<FishController>().removeEgg(enteringCollider.gameObject.GetComponent<FishEgg>());
@@ -193,6 +193,7 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 		}
 		if(eventType == EventType.PLAYER_DEATH) {
 			stopMating(false);
+			fishCategoryTypeToListOfEnemyFish.Clear();
 		}
 	}
 	
@@ -437,32 +438,32 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 
 	private void addMeToDictionaryOfFish() {
 		//assert this object is not yet in the list
-		if(fishTypeToListOfEnemyFish.ContainsKey(fishType)) {
-			foreach (EnemyFish enemyFish in fishTypeToListOfEnemyFish[fishType]) {
+		if(fishCategoryTypeToListOfEnemyFish.ContainsKey(fishCategoryType)) {
+			foreach (EnemyFish enemyFish in fishCategoryTypeToListOfEnemyFish[fishCategoryType]) {
 				if(enemyFish.gameObject.Equals(this.gameObject)) {
 					return;
 				}
 			}
 		}
 
-		if(!fishTypeToListOfEnemyFish.ContainsKey(fishType)) {
-			fishTypeToListOfEnemyFish.Add(fishType, new List<EnemyFish>());
+		if(!fishCategoryTypeToListOfEnemyFish.ContainsKey(fishCategoryType)) {
+			fishCategoryTypeToListOfEnemyFish.Add(fishCategoryType, new List<EnemyFish>());
         }
-		fishTypeToListOfEnemyFish[fishType].Add(this);
+		fishCategoryTypeToListOfEnemyFish[fishCategoryType].Add(this);
 	}
 
 	private void removeMeFromDictionary() {
 		//assert this object is not yet in the list
-		if(fishTypeToListOfEnemyFish.ContainsKey(fishType)) {
-			fishTypeToListOfEnemyFish[fishType].Remove(this);
+		if(fishCategoryTypeToListOfEnemyFish.ContainsKey(fishCategoryType)) {
+			fishCategoryTypeToListOfEnemyFish[fishCategoryType].Remove(this);
 		}
 	}
 
 	private List<EnemyFish> getSameFishTypeInRadius(float radius) {
 		List<EnemyFish> result = new List<EnemyFish>();
 
-		if(fishTypeToListOfEnemyFish.ContainsKey(fishType)) {
-			foreach (EnemyFish enemyFish in fishTypeToListOfEnemyFish[fishType]) {
+		if(fishCategoryTypeToListOfEnemyFish.ContainsKey(fishCategoryType)) {
+			foreach (EnemyFish enemyFish in fishCategoryTypeToListOfEnemyFish[fishCategoryType]) {
 				Vector2 enemyPosition = new Vector2 (enemyFish.transform.position.x, enemyFish.transform.position.y);
 				if(!System.Object.ReferenceEquals(enemyFish, this) && Mathf.Abs(Vector2.Distance(getMouthPosition(), enemyPosition)) <= radius) {
 					result.Add(enemyFish);
