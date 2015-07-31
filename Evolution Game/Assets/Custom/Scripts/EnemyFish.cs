@@ -14,6 +14,7 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 	public float rotationSpeed = 50;
 	public float awarenessRadius = 15f; 
 
+
 	private GameObject player = null;
 	private Animator animator;
 	private Emitter heartEmitter;
@@ -24,6 +25,8 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 	private Vector3 lastPosition; //position in last frame
 	private bool isGameActive = true;
 	private bool onTriggerStayWasAlreadyExecutedThisFrame = false;
+	private bool isInSlowedArea = false;
+	private float speedMultiplierInSlowedArea = 1f;
 
 	//only for FishType that is ready for mating
 	private bool isMating = false;
@@ -191,6 +194,22 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 		}
 	}
 
+	void OnTriggerEnter2D(Collider2D enteringCollider) {
+		SlowedAreaComponent slow = enteringCollider.GetComponent<SlowedAreaComponent>();
+		if(slow != null) {
+			isInSlowedArea = true;
+			speedMultiplierInSlowedArea = slow.speedMultiplierInSlowedArea;
+		}
+	}
+
+	void OnTriggerExit2D(Collider2D enteringCollider) {
+		SlowedAreaComponent slow = enteringCollider.GetComponent<SlowedAreaComponent>();
+		if(slow != null) {
+			isInSlowedArea = false;
+			speedMultiplierInSlowedArea = 1f;
+		}
+	}
+
 	public void handleEvent(EventType eventType) {
 		if(eventType == EventType.GAME_OVER || eventType == EventType.GAME_WON) {
 			isGameActive = false;
@@ -211,7 +230,7 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 	{
 		if (isMoving) {
 			lastPosition = transform.position;
-			determineNewSpeed();
+			recalculateSpeed();
 			if (currentMovementType.Equals (MovementType.WAYPOINT_BASED)) {
 				updateWaypointBasedFishMovement ();
 			}
@@ -427,16 +446,21 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 		isTurning = true;
 	}
 
-	private void determineNewSpeed () {
+	private void recalculateSpeed () {
+		currentMaxSpeed = speed;
+
 		//increase speed if player is closer to guarding spot than the follower
 		if(movementType.Equals(MovementType.FOLLOW_PLAYER) && secondaryMovementType.Equals(MovementType.GUARD_STARTING_SPOT) && player != null) {
 			Vector2 playerPos = new Vector2(player.transform.position.x, player.transform.position.y);
 			Vector2 mouthPos = getMouthPosition();
 			bool isPlayerCloserToSpot = Mathf.Abs(Vector2.Distance(playerPos, guardedSpot)) < Mathf.Abs(Vector2.Distance(mouthPos, guardedSpot));
-			currentMaxSpeed = speed;
 			if(isPlayerCloserToSpot) {
 				currentMaxSpeed *= speedMultiplierIfPlayerIsCloserToGuardedSpot;
 			}
+		}
+
+		if(isInSlowedArea) {
+			currentMaxSpeed *= speedMultiplierInSlowedArea;
 		}
 	}
 
