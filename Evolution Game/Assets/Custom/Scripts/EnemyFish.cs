@@ -606,8 +606,10 @@ public class EnemyFish : MonoBehaviour, IEventReceiver {
 		}
 		if(transform.eulerAngles.y % 360 > 90 && transform.eulerAngles.y % 360 < 270) {
 			transform.eulerAngles = new Vector3(transform.eulerAngles.x, 180 ,transform.eulerAngles.z);
+			isFacingRight = true;
 		} else {
 			transform.eulerAngles = new Vector3(transform.eulerAngles.x, 0 ,transform.eulerAngles.z);
+			isFacingRight = false;
 		}
 
 		if(success) {

@@ -111,7 +111,7 @@ public class GUIManager : MonoBehaviour, IEventReceiver {
 	}
 
 	public void updateCollectablesAndRewards() {
-		if(collectables != null) {
+		/*if(collectables != null) {
 			Dictionary<CollectableType, int> gatheredCollectables = GameStatistics.getGatheredCollectables(); 
 			collectables.text = "";
 			foreach (KeyValuePair<CollectableType, int> pair in gatheredCollectables) {
@@ -121,7 +121,7 @@ public class GUIManager : MonoBehaviour, IEventReceiver {
 			foreach (KeyValuePair<RewardType, int> pair in gatheredRewards) {
 				collectables.text += pair.Key.getDescription() + ": " + pair.Value.ToString() + "\n";
 			}
-		}
+		}*/
 		updateSpeedProgressImage();
 		updateStrengthProgressImage();
 		updateLibidoProgressImage();

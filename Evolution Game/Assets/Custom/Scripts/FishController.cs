@@ -291,7 +291,7 @@ public class FishController : MonoBehaviour, IEventReceiver {
 	private void updateStrongState(bool strong) {
 		isStrong = strong;
 		if (strong) {
-			GetComponent<Rigidbody2D>().mass = 800;
+			GetComponent<Rigidbody2D>().mass = 50000;
 			bubbleEmitter.transform.localPosition = new Vector3(-3f, 0.1f, 0f);
 			heartEmitter.transform.localPosition = new Vector3(-3f, 0.1f, 0f);
 		} else {
@@ -315,8 +315,10 @@ public class FishController : MonoBehaviour, IEventReceiver {
 		isCurrentlyMating = false;
 		if(transform.eulerAngles.y % 360 > 90 && transform.eulerAngles.y % 360 < 270) {
 			transform.eulerAngles = new Vector3(transform.eulerAngles.x, 180 ,transform.eulerAngles.z);
+			isFacingRight = true;
 		} else {
 			transform.eulerAngles = new Vector3(transform.eulerAngles.x, 0 ,transform.eulerAngles.z);
+			isFacingRight = false;
 		}
 		if(success) {
 			matingPartner.layEggs();
